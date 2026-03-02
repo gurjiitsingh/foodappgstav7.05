@@ -24,8 +24,7 @@ class PaymentViewModel(
                 paymentType = type.name
             )
 
-            // 2️⃣ Close table
-            repository.closeTable(tableId)
+
 
             // 3️⃣ Notify UI
             _paymentDone.value = true

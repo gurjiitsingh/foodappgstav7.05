@@ -191,37 +191,8 @@ if(role == "bill") {
         }
     }
 
-    // -------------------------
-// REQUEST BILL (NO PAYMENT)
-// -------------------------
-    fun requestBill(tableNo: String) {
-        viewModelScope.launch {
-            try {
-                repository.markTableBillRequested(tableNo)
-                Log.d("POS", "Bill requested for table=$tableNo")
-            } catch (e: Exception) {
-                Log.e("POS", "Failed to request bill", e)
-            }
-        }
-    }
 
 
-
-
-
-    // -------------------------
-// CLOSE TABLE (NO BILLING)
-// -------------------------
-    fun closeTableOnly(tableNo: String) {
-        viewModelScope.launch {
-            try {
-                repository.closeTable(tableNo)
-                Log.d("POS", "Table marked AVAILABLE: $tableNo")
-            } catch (e: Exception) {
-                Log.e("POS", "Failed to close table", e)
-            }
-        }
-    }
 
 
 

@@ -177,7 +177,7 @@ private fun ParentProductCard(
                     price = price
                 )
                     onProductAdded()
-                    tableViewModel.markOrdering(tableNo) },
+                  },
                 modifier = Modifier.size(38.dp),
                 contentPadding = PaddingValues(1.dp),
                 shape = RoundedCornerShape(6.dp),

@@ -199,7 +199,7 @@ private fun ParentProductCard(
                             )
                         )
                         onProductAdded()
-                         tableViewModel.markOrdering(tableNo)
+
                     },
                     modifier = Modifier
                         .size(width = 40.dp, height = 32.dp)

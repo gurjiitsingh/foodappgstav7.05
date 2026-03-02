@@ -27,13 +27,7 @@ class TableReleaseUseCase(
             "Before update → id=${table.id}, name=${table.tableName}, status=${table.status}"
         )
 
-        // 3️⃣ only release ORDERING tables
-        if (table.status == TableStatus.ORDERING) {
 
-            tableDao.updateStatus(table.id, TableStatus.AVAILABLE)
-          //  loadTables()
-            Log.d("CART_DEBUG", "table releasing success=$tableNo")
-        }
 
         // 🔍 DEBUG: log ALL tables after update
         val allTables = tableDao.getAllTables()
@@ -68,7 +62,7 @@ class TableReleaseUseCase(
                 "CART_DEBUG",
                 "table releasing success=${tableNo}"
             )
-            tableDao.updateStatus(tableNo, TableStatus.AVAILABLE)
+
             tableDao.updateStatusByName(tableNo, TableStatus.AVAILABLE)
         }
     }

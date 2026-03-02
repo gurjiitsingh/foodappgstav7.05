@@ -61,14 +61,7 @@ class POSOrdersRepository(
     // -------------------------
 
 
-    suspend fun markTableBillRequested(tableId: String) {
-        tableDao.updateStatus(tableId, "BILL_REQUESTED")
-    }
 
-    suspend fun closeTable(tableId: String) {
-        tableDao.updateStatus(tableId, "AVAILABLE")
-        tableDao.setActiveOrder(tableId, "") // or a clearActiveOrder() DAO
-    }
 
     // -------------------------
     // ORDERS
