@@ -123,13 +123,7 @@ fun PosScreen(
     }
 
 
-//    val hasHardwareKeyboard =
-//        LocalConfiguration.current.keyboard != Configuration.KEYBOARD_NOKEYS
-//    if (hasHardwareKeyboard) {
-//        PosHardwareKeyboardHelp(...)
-//    } else {
-//        PosTouchKeyboard(...)
-//    }
+
 
     LaunchedEffect(Unit) {
         cartViewModel.uiEvent.collect { event ->
@@ -213,11 +207,7 @@ fun PosScreen(
         showSearchKeyboard = false
     }
 
-//    Box(
-//        modifier = Modifier
-//            .fillMaxSize()
-//            .background(MaterialTheme.colorScheme.background)
-//    )
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -297,8 +287,8 @@ fun PosScreen(
                         IconButton(
                             onClick = {
                                 orderType = "TAKEAWAY"
-                                posSessionViewModel.clearTable()
-                                showTableSelector = false
+                              //  posSessionViewModel.clearTable()
+                                showTableSelector = true
                             },
                             modifier = Modifier
                                 .size(commonHeight)
@@ -322,8 +312,8 @@ fun PosScreen(
                         IconButton(
                             onClick = {
                                 orderType = "DELIVERY"
-                                posSessionViewModel.clearTable()
-                                showTableSelector = false
+                              //  posSessionViewModel.clearTable()
+                                showTableSelector = true
                             },
                             modifier = Modifier
                                 .size(commonHeight)
@@ -391,19 +381,7 @@ fun PosScreen(
                                 )
                             }
 
-//                            OutlinedTextField(
-//                                value = searchQuery,
-//                                onValueChange = {
-//                                    searchQuery = it
-//                                    productsViewModel.setSearchQuery(it)
-//                                },
-//                                modifier = Modifier
-//                                    // .weight(1f)
-//                                    .height(commonHeight),
-//                                placeholder = { Text("Search by name or code") },
-//                                singleLine = true,
-//                                textStyle = MaterialTheme.typography.bodyMedium
-//                            )
+
                         }
 
                         IconButton(
@@ -494,7 +472,7 @@ fun PosScreen(
                         IconButton(
                             onClick = {
                                 orderType = "TAKEAWAY"
-                                posSessionViewModel.clearTable()
+                               // posSessionViewModel.clearTable()
                                 showTableSelector = true
                             },
                             modifier = Modifier
@@ -519,8 +497,8 @@ fun PosScreen(
                         IconButton(
                             onClick = {
                                 orderType = "DELIVERY"
-                                posSessionViewModel.clearTable()
-                                showTableSelector = false
+                              //  posSessionViewModel.clearTable()
+                                showTableSelector = true
                             },
                             modifier = Modifier
                                 .size(commonHeight)

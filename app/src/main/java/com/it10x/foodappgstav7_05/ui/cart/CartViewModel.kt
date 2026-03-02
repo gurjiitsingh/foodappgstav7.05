@@ -211,7 +211,11 @@ class CartViewModel(
             else -> null
         }
 
-        if (resolvedTableId.isNullOrBlank()) return
+
+        if (resolvedTableId.isNullOrBlank()) {
+            Log.e("CART_DEBUG", "initSession FAILED: tableId null for $orderType")
+            return
+        }
 
         // ✅ PREVENT DUPLICATE SESSION CREATION
         if (
