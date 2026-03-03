@@ -280,23 +280,7 @@ class MainActivity : ComponentActivity() {
                                         thickness = 0.5.dp
                                     )
 
-                                    NavigationDrawerItem(
-                                        label = { Text("POS Classic") },
-                                        selected = false,
-                                        onClick = {
-                                            scope.launch { drawerState.close() }
-                                            navController.navigate("posClassic") {
-                                                popUpTo("posClassic") { inclusive = true }
-                                            }
-                                        }
-                                    )
 
-                                    Divider(
-                                        modifier = Modifier
-                                            .padding(horizontal = 16.dp)
-                                            .padding(bottom = 4.dp),
-                                        thickness = 0.5.dp
-                                    )
                                     NavigationDrawerItem(
                                         label = { Text("Tables") },
                                         selected = false,
