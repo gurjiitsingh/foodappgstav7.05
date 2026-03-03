@@ -13,69 +13,15 @@ interface KotItemDao {
 
 
 
-    @Dao
-    interface KotItemDao {
-
-        @Insert(onConflict = OnConflictStrategy.ABORT)
-        suspend fun insertAll(items: List<PosKotItemEntity>)
-
-        // 🔥 Printing
-        @Query("""
-        SELECT * FROM pos_kot_items
-        WHERE tableNo = :tableNo
-        AND kitchenPrinted = 0
-        AND status = 'ACTIVE'
-        ORDER BY createdAt ASC
-    """)
-        suspend fun getItemsToPrint(tableNo: String): List<PosKotItemEntity>
-
-        @Query("""
-        UPDATE pos_kot_items
-        SET kitchenPrinted = 1
-        WHERE id IN (:ids)
-    """)
-        suspend fun markPrinted(ids: List<String>)
-
-        // 💳 Billing
-        @Query("""
-        SELECT * FROM pos_kot_items
-        WHERE tableNo = :tableNo
-        AND status = 'ACTIVE'
-    """)
-        suspend fun getBillItems(tableNo: String): List<PosKotItemEntity>
-
-        @Query("""
-        SELECT SUM(quantity) FROM pos_kot_items
-        WHERE tableNo = :tableNo
-        AND productId = :productId
-        AND status = 'ACTIVE'
-    """)
-        suspend fun getTotalQtyForProduct(
-            tableNo: String,
-            productId: String
-        ): Int?
-    }
 
 
-    @Dao
-    interface KotBatchDao {
 
-        @Insert(onConflict = OnConflictStrategy.ABORT)
-        suspend fun insert(batch: PosKotBatchEntity)
 
-        @Query("""
-        SELECT * FROM pos_kot_batch
-        WHERE tableNo = :tableNo
-        ORDER BY createdAt ASC
-    """)
-        suspend fun getBatchesForTable(tableNo: String): List<PosKotBatchEntity>
 
-        @Query("""
-        SELECT * FROM pos_kot_batch
-        WHERE syncStatus != 'DONE'
-    """)
-        suspend fun getUnsyncedBatches(): List<PosKotBatchEntity>
-    }
+
+
+
+
 
 
 
@@ -150,7 +96,7 @@ interface KotItemDao {
     @Query("""
     SELECT * FROM pos_kot_items
     WHERE tableNo = :tableNo
-      AND status = 'DONE'
+    
     ORDER BY createdAt ASC
 """)
     fun getDoneItemsForTable(tableNo: String): Flow<List<PosKotItemEntity>>
@@ -188,15 +134,7 @@ AND status = 'PENDING'
 
     @Query("DELETE FROM pos_kot_items WHERE id = :id")
     suspend fun deleteItemById(id: String)
-    // -------------------------
-// PRINT FLAG
-// -------------------------
-//    @Query("""
-//    UPDATE pos_kot_items
-//    SET print = 1
-//    WHERE id = :itemId
-//""")
-//    suspend fun markPrinted(itemId: String)
+
 
 
 
@@ -366,7 +304,7 @@ AND status = 'PENDING'
     SELECT COUNT(*) 
     FROM pos_kot_items
     WHERE tableNo = :tableNo
-      AND status = 'DONE'
+   
 """)
     suspend fun countBillDone(tableNo: String): Int
 
@@ -377,7 +315,7 @@ AND status = 'PENDING'
     SELECT COUNT(*) 
     FROM pos_kot_items 
     WHERE tableNo = :tableNo 
-    AND status = 'DONE'
+   
 """)
     suspend fun getBillLineCount(tableNo: String): Int?
 
@@ -385,14 +323,14 @@ AND status = 'PENDING'
     SELECT SUM(quantity) 
     FROM pos_kot_items 
     WHERE tableNo = :tableNo 
-    AND status = 'DONE'
+ 
 """)
     suspend fun getBillQtyCount(tableNo: String): Int?
 
     @Query("""
 SELECT SUM(basePrice * quantity)
 FROM pos_kot_items
-WHERE tableNo = :tableNo AND status = 'DONE'
+WHERE tableNo = :tableNo 
 """)
     suspend fun sumDoneAmount(tableNo: String): Double?
 
@@ -412,7 +350,7 @@ WHERE tableNo = :tableNo AND status = 'DONE'
         ), 0)
     FROM pos_kot_items
     WHERE tableNo = :tableNo
-      AND status = 'DONE'
+     
 """)
     suspend fun billAmountForTable(tableNo: String): Double
 

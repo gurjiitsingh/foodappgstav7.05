@@ -1,6 +1,7 @@
 package com.it10x.foodappgstav7_05.ui.bill
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.google.firebase.firestore.FirebaseFirestore
@@ -35,7 +36,7 @@ class BillViewModelFactory(
                 db.kotItemDao(),
                 db.tableDao()
             )
-
+            Log.d("BILL_FACTORY", "Factory created with orderType=$orderType | tableId=$tableId")
             val ordersRepository = POSOrdersRepository(
                 db = db,
                 orderMasterDao = db.orderMasterDao(),

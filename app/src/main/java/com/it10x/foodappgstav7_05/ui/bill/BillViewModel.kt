@@ -123,12 +123,18 @@ class BillViewModel(
         get() = orderType
 
     init {
-       // Log.d("BILL_INIT", "Initialized | table=$tableId")
+
+        Log.d(
+            "BILL_DEBUG",
+            "BillViewModel started with tableId=$tableId, orderType=$orderType"
+
+        )
 
         observeBill()
         loadCurrency()
 
     }
+
 
     // --------------------------------------------------------
     // Observe Bill (Live billing snapshot)
@@ -186,14 +192,7 @@ class BillViewModel(
 
 
 
-//                val subtotal = billingItems.sumOf { it.itemtotal }
-//                val tax = billingItems.sumOf { it.taxTotal }
-//
-//                val percentValue = subtotal * (percent / 100.0)
-//                val appliedDiscount = if (flat > 0) flat else percentValue
-//
-//                val finalTotal = (subtotal + tax - appliedDiscount)
-//                    .coerceAtLeast(0.0)
+
 
                 val subtotal = billingItems.sumOf { it.itemtotal }
                 val totalTax = billingItems.sumOf { it.taxTotal }
@@ -504,7 +503,7 @@ class BillViewModel(
             // ===========================
             // ORDER MASTER
             // ===========================
-
+                Log.d("BILL_FACTORY", "BilViewmodel created with orderType=$orderType | tableId=$tableId")
             val orderMaster = PosOrderMasterEntity(
                 id = orderId,
                 srno = srno,

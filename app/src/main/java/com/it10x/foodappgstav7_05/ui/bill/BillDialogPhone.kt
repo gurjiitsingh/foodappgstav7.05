@@ -55,7 +55,8 @@ fun BillDialogPhone(
             ) {
 
                 val billViewModel: BillViewModel = viewModel(
-                    key = "BillVM_${sessionId}",
+
+                    key = "BillVM_${sessionId}_${orderType}",
                     factory = BillViewModelFactory(
                         application = LocalContext.current.applicationContext as Application,
                         tableId = tableId ?: orderType,

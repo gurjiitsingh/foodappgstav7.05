@@ -98,7 +98,7 @@ fun RightPanel(
     )
 
     //val orderRef = if (orderType == "DINE_IN") tableNo ?: "" else cartViewModel.sessionKey.value ?: ""
-    val orderRef = if (orderType == "DINE_IN") tableNo ?: "" else orderType
+    val orderRef =tableNo
 
     val kitchenItems by kitchenViewModel
         .getPendingItems(orderRef = orderRef, orderType = orderType)
@@ -149,7 +149,7 @@ fun RightPanel(
             else -> false
         }
 
-    val canOpenKitchen = hasItems
+//    val canOpenKitchen = hasItems
   //  val canOpenBill = hasBillItems
 
     Column(

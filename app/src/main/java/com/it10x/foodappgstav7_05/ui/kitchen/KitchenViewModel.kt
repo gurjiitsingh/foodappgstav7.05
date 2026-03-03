@@ -60,7 +60,12 @@ class KitchenViewModel(
                 initialValue = emptyList()
             )
 
-
+    init {
+        Log.d(
+            "VM_INIT_TRACE",
+            "KitchenViewModel created with orderType=$orderType, tableId=$tableId, sessionId=$sessionId"
+        )
+    }
 
     private val kotRepository = KotRepository(
         AppDatabaseProvider.get(app).kotBatchDao(),
@@ -88,7 +93,7 @@ class KitchenViewModel(
     fun getPendingItems(orderRef: String, orderType: String): Flow<List<PosKotItemEntity>> {
 
 
-        return if (orderType == "DINE_IN") {
+        return if (orderType == "DINE_IN" || orderType == "TAKEAWAY" || orderType == "DELIVERY") {
             kotItemDao.getPendingItemsForTable(orderRef)
         } else {
             kotItemDao.getPendingItemsForTable(orderType)
@@ -104,7 +109,10 @@ class KitchenViewModel(
         deviceName: String?,
         appVersion: String?
     ) {
-       // Log.d("KITCHEN_PRINT", "sendToKitchen tableNo=$tableNo ")
+         Log.d(
+             "ORDER_TYPE_TRACE",
+             "cartToKotMainPOS called with orderType=$orderType, tableNo=$tableNo, sessionId=$sessionId"
+         )
            logAllKotItems()
         viewModelScope.launch {
             _loading.value = true
@@ -244,6 +252,7 @@ class KitchenViewModel(
             kotBatchDao.insert(batch)
 
             val items = cartItems.map { cart ->
+                Log.d("ORDER_TYPE_TRACE",  "orderType=$orderType  session=$sessionId")
                 PosKotItemEntity(
                     id = UUID.randomUUID().toString(),
                     sessionId = sessionId,

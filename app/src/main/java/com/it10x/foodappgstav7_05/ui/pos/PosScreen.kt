@@ -194,13 +194,19 @@ fun PosScreen(
         .filter { it.parentId != null }
         .groupBy { it.parentId!! }
 
+//    LaunchedEffect(orderType, tableId) {
+//        if (orderType == "DINE_IN" && !tableId.isNullOrBlank()) {
+//            cartViewModel.initSession("DINE_IN", tableId)
+//        } else {
+//            cartViewModel.initSession(orderType)
+//        }
+//    }
     LaunchedEffect(orderType, tableId) {
-        if (orderType == "DINE_IN" && !tableId.isNullOrBlank()) {
-            cartViewModel.initSession("DINE_IN", tableId)
-        } else {
-            cartViewModel.initSession(orderType)
+        if (!tableId.isNullOrBlank()) {
+            cartViewModel.initSession(orderType, tableId)
         }
     }
+
     LaunchedEffect(orderType) {
         searchQuery = ""
        // productsViewModel.setSearchQuery("")
@@ -783,7 +789,7 @@ fun PosScreen(
             key = "KitchenVM_${sessionId ?: orderType}",
             factory = KitchenViewModelFactory(
                 app = LocalContext.current.applicationContext as android.app.Application,
-                tableId = tableId ?: orderType,
+                tableId = tableId ?: return,
                 tableName = selectedTableName ?: "",
                 sessionId = sessionId!!,
                 orderType = orderType,
@@ -892,90 +898,6 @@ else{
 
 }
 
-// ================= CATEGORY BUTTON =================
-
-@Composable
-fun CategoryButton(
-    label: String,
-    selected: Boolean,
-    onClick: () -> Unit
-) {
-    Surface(
-        color = if (selected)
-            MaterialTheme.colorScheme.primary
-        else
-            MaterialTheme.colorScheme.surface,
-        shape = MaterialTheme.shapes.small,
-        shadowElevation = 2.dp,
-        border = if (!selected)
-            BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
-        else null,
-        modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight()
-            .clickable { onClick() }
-    ) {
-        Box(
-            modifier = Modifier
-                .padding(horizontal = 10.dp, vertical = 12.dp),
-            contentAlignment = Alignment.CenterStart
-        ) {
-            Text(
-                text = label,
-                color = if (selected)
-                    MaterialTheme.colorScheme.onPrimary
-                else
-                    MaterialTheme.colorScheme.onSurface,
-                minLines = 3,
-                maxLines = 3,
-                overflow = TextOverflow.Ellipsis,
-                fontSize = 11.sp,
-                style = MaterialTheme.typography.bodyMedium
-            )
-        }
-    }
-}
-
-
-
-
-@Composable
-fun FloatingCartButton(
-    count: Int,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Box(modifier = modifier) {
-
-        FloatingActionButton(
-            onClick = onClick,
-            containerColor = MaterialTheme.colorScheme.primary
-        ) {
-            Icon(
-                imageVector = Icons.Default.ShoppingCart,
-                contentDescription = "Cart",
-                tint = MaterialTheme.colorScheme.onPrimary
-            )
-        }
-
-        if (count > 0) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .offset(x = 6.dp, y = (-6).dp)
-                    .size(22.dp)
-                    .background(Color.Red, shape = CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = count.toString(),
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    style = MaterialTheme.typography.labelSmall
-                )
-            }
-        }
-    }
-}
 
 @Composable
 fun OrderChip(
@@ -1018,28 +940,6 @@ fun OrderChip(
 
 
 
-@Composable
-fun PosOrderTypeButton(
-    label: String,
-    selected: Boolean,
-    onClick: () -> Unit,
-    shape: Shape = RoundedCornerShape(8.dp),   // ✅ add this
-    height: Dp = 52.dp                         // ✅ add this
-) {
-    Button(
-        onClick = onClick,
-        modifier = Modifier.height(height),
-        shape = shape,
-        colors = ButtonDefaults.buttonColors(
-            containerColor = if (selected)
-                MaterialTheme.colorScheme.primary
-            else
-                MaterialTheme.colorScheme.surfaceVariant
-        )
-    ) {
-        Text(label)
-    }
-}
 
 fun toTitleCase(text: String): String {
     return text

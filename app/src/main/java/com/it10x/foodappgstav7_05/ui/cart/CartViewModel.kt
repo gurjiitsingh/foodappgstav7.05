@@ -34,6 +34,8 @@ class CartViewModel(
 //        )
 //    }
 // ---------- ORDER CONTEXT ----------
+
+
     private val currentTableId =
         savedStateHandle.getStateFlow<String?>("tableId", null)
 
@@ -99,7 +101,10 @@ class CartViewModel(
         price: Double
     ) {
         viewModelScope.launch {
-
+            Log.d(
+                "CART_SCOPE_DEBUG",
+                "orderType=${currentOrderType.value}, tableId=${currentTableId.value}, sessionId=${sessionId.value}"
+            )
             if (sessionId.value.isNullOrBlank()) {
                 _uiEvent.emit(CartUiEvent.SessionRequired)
                 initSession(currentOrderType.value, currentTableId.value)

@@ -253,7 +253,7 @@ private fun onPaymentClick(
     }
 
     viewModel.viewModelScope.launch {
-
+// MODIFY IT TO SEARCH ITEMS FROM CART FROM NOT PANDING IN KOT
         val hasPending = viewModel.hasPendingKitchenItems()
 
         if (hasPending) {

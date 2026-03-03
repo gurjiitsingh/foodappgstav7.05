@@ -14,18 +14,11 @@ class KotRepository(
     private val tableDao: TableDao
 ) {
 
-    fun getRunningKotsForTable(tableNo: String): Flow<Pair<List<Any>, List<Any>>> {
-        return combine(
-            batchDao.getBatchesForTable(tableNo),
-            kotItemDao.getItemsForTable(tableNo)
-        ) { batches, items ->
-            batches to items
-        }
-    }
+
 
 
     suspend fun insertItemsInBill(
-        tableNo: String,
+        tableNo: String,// NOT USING , tableNo ALLREADY IN  PosKotItemEntity
         items: List<PosKotItemEntity>
     ) {
         kotItemDao.insertAll(items)
