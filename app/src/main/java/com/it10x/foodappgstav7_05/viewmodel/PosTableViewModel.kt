@@ -111,7 +111,7 @@ class PosTableViewModel(app: Application) : AndroidViewModel(app) {
                 val tableId = table.id
 
                 cartRepository.syncCartCount(tableId)
-               // kotRepository.syncKinchenCount(tableId)
+                kotRepository.syncKinchenCount(tableId)
                 kotRepository.syncBillCount(tableId)
             }
         }

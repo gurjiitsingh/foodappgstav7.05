@@ -24,6 +24,7 @@ import com.it10x.foodappgstav7_05.com.ui.settings.PrinterRoleSelectionScreen
 import com.it10x.foodappgstav7_05.data.PrinterPreferences
 import com.it10x.foodappgstav7_05.data.PrinterRole
 import com.it10x.foodappgstav7_05.data.pos.AppDatabaseProvider
+import com.it10x.foodappgstav7_05.data.pos.manager.TableSyncManager
 
 import com.it10x.foodappgstav7_05.data.pos.viewmodel.POSOrdersViewModel
 import com.it10x.foodappgstav7_05.data.pos.viewmodel.POSOrdersViewModelFactory
@@ -48,6 +49,8 @@ import com.it10x.foodappgstav7_05.data.pos.repository.CartRepository
 import com.it10x.foodappgstav7_05.data.pos.repository.CategoryRepository
 import com.it10x.foodappgstav7_05.data.pos.repository.CustomerLedgerRepository
 import com.it10x.foodappgstav7_05.data.pos.repository.CustomerRepository
+import com.it10x.foodappgstav7_05.data.pos.repository.KotRepository
+import com.it10x.foodappgstav7_05.data.pos.repository.VirtualTableRepository
 import com.it10x.foodappgstav7_05.domain.usecase.TableReleaseUseCase
 import com.it10x.foodappgstav7_05.ui.cart.CartViewModel
 import com.it10x.foodappgstav7_05.ui.cart.CartViewModelFactory
@@ -90,6 +93,61 @@ fun NavigationHost(
         )
     )
 
+// -----------------------------
+// SHARED REPOSITORIES
+// -----------------------------
+
+    val cartRepository = remember {
+        CartRepository(
+            db.cartDao(),
+            db.tableDao()
+        )
+    }
+
+    val kotRepository = remember {
+        KotRepository(
+            db.kotBatchDao(),
+            db.kotItemDao(),
+            db.tableDao()
+        )
+    }
+
+    val virtualTableRepository = remember {
+        VirtualTableRepository(
+            db.virtualTableDao(),
+            db.cartDao(),
+            db.kotItemDao()
+        )
+    }
+
+    val tableSyncManager = remember {
+        TableSyncManager(
+            tableRepo = kotRepository,
+            cartRepo = cartRepository,   // ✅ Now it exists
+            virtualRepo = virtualTableRepository
+        )
+    }
+
+    val categoryRepository = remember {
+        CategoryRepository(db.categoryDao())
+    }
+
+    val tableReleaseUseCase = remember {
+        TableReleaseUseCase(
+            cartRepository = cartRepository,
+            tableDao = db.tableDao()
+        )
+    }
+
+    val cartViewModelFactory = remember {
+        CartViewModelFactory(
+            repository = cartRepository,
+            categoryRepository = categoryRepository,
+            tableReleaseUseCase = tableReleaseUseCase,
+            tableSyncManager = tableSyncManager
+        )
+    }
+
 
 
     val application = context.applicationContext as Application
@@ -106,19 +164,8 @@ fun NavigationHost(
     val posSessionViewModel: PosSessionViewModel = viewModel()
     val posTableViewModel: PosTableViewModel = viewModel()
 
-    val cartRepository = remember {
-        CartRepository(
-            db.cartDao(),
-            db.tableDao()
-        )
-    }
 
-    val tableReleaseUseCase = remember {
-        TableReleaseUseCase(
-            cartRepository = cartRepository,
-            tableDao = db.tableDao()
-        )
-    }
+
 
     // -----------------------------
     // NAV HOST
@@ -231,23 +278,10 @@ fun NavigationHost(
         // ---------------- POS ----------------
 
 
-
         composable("pos") {
 
-            val context = LocalContext.current
-            val db = AppDatabaseProvider.get(context)
-
             val cartViewModel: CartViewModel = viewModel(
-                factory = CartViewModelFactory(
-                    repository = CartRepository(
-                        db.cartDao(),
-                        db.tableDao()
-                    ),
-                    categoryRepository = CategoryRepository(   // ✅ ADD THIS
-                        db.categoryDao()
-                    ),
-                    tableReleaseUseCase = tableReleaseUseCase
-                )
+                factory = cartViewModelFactory
             )
 
             PosScreen(
@@ -299,20 +333,8 @@ fun NavigationHost(
 
         composable("tables") {
 
-            val context = LocalContext.current
-            val db = AppDatabaseProvider.get(context)
-
             val cartViewModel: CartViewModel = viewModel(
-                factory = CartViewModelFactory(
-                    repository = CartRepository(
-                        db.cartDao(),
-                        db.tableDao()
-                    ),
-                    categoryRepository = CategoryRepository(   // ✅ ADD THIS
-                        db.categoryDao()
-                    ),
-                    tableReleaseUseCase = tableReleaseUseCase
-                )
+                factory = cartViewModelFactory
             )
 
             TableScreen(
@@ -331,20 +353,8 @@ fun NavigationHost(
 
         composable("posWaiter") {
 
-            val context = LocalContext.current
-            val db = AppDatabaseProvider.get(context)
-
             val cartViewModel: CartViewModel = viewModel(
-                factory = CartViewModelFactory(
-                    repository = CartRepository(
-                        db.cartDao(),
-                        db.tableDao()
-                    ),
-                    categoryRepository = CategoryRepository(   // ✅ ADD THIS
-                        db.categoryDao()
-                    ),
-                    tableReleaseUseCase = tableReleaseUseCase
-                )
+                factory = cartViewModelFactory
             )
 
             WaiterPosScreen(

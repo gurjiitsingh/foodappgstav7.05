@@ -16,6 +16,10 @@ class VirtualTableViewModel(app: Application) : AndroidViewModel(app) {
     // 🔥 Current selected order type
     private val selectedType = MutableStateFlow<String?>(null)
 
+    private val cartDao = AppDatabaseProvider.get(app).cartDao()
+    private val kotDao = AppDatabaseProvider.get(app).kotItemDao()
+
+
     // 🔥 Automatically reacts when type changes
     val tables: StateFlow<List<VirtualTableEntity>> =
         selectedType
@@ -55,6 +59,44 @@ class VirtualTableViewModel(app: Application) : AndroidViewModel(app) {
     fun delete(id: String) {
         viewModelScope.launch {
             dao.deleteById(id)
+        }
+    }
+
+
+    fun syncCartCount(tableId: String) {
+        viewModelScope.launch {
+            val count = cartDao.getCartCountForTable(tableId) ?: 0
+            dao.setCartCount(
+                tableId = tableId,
+                count = count,
+                time = System.currentTimeMillis()
+            )
+        }
+    }
+
+    fun syncBillData(tableId: String) {
+        viewModelScope.launch {
+
+            val billCount = kotDao.getBillQtyCount(tableId) ?: 0
+            val billAmount = kotDao.sumDoneAmount(tableId) ?: 0.0
+
+            dao.setBillData(
+                tableId = tableId,
+                count = billCount,
+                amount = billAmount,
+                time = System.currentTimeMillis()
+            )
+        }
+    }
+
+    fun syncKitchenCount(tableId: String) {
+        viewModelScope.launch {
+            val count = kotDao.getKitchenCountForTable(tableId) ?: 0
+            dao.setKitchenCount(
+                tableId = tableId,
+                count = count,
+                time = System.currentTimeMillis()
+            )
         }
     }
 }

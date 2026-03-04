@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.it10x.foodappgstav7_05.data.pos.AppDatabaseProvider
 import com.it10x.foodappgstav7_05.data.pos.entities.PosCartEntity
 import com.it10x.foodappgstav7_05.data.pos.entities.ProductEntity
 import com.it10x.foodappgstav7_05.data.pos.repository.CartRepository
@@ -12,7 +13,8 @@ import com.it10x.foodappgstav7_05.domain.usecase.TableReleaseUseCase
 import com.it10x.foodappgstav7_05.ui.pos.toTitleCase
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-
+import com.it10x.foodappgstav7_05.data.pos.repository.VirtualTableRepository
+import com.it10x.foodappgstav7_05.data.pos.manager.TableSyncManager
 sealed class CartUiEvent {
     object SessionRequired : CartUiEvent()
     object TableRequired : CartUiEvent()   // ✅ ADD THIS
@@ -22,6 +24,7 @@ class CartViewModel(
     private val repository: CartRepository,
     private val categoryRepository: CategoryRepository,
     private val tableReleaseUseCase: TableReleaseUseCase,
+    private val tableSyncManager: TableSyncManager,
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -44,6 +47,9 @@ class CartViewModel(
 
     private val _uiEvent = MutableSharedFlow<CartUiEvent>()
     val uiEvent = _uiEvent.asSharedFlow()
+
+
+
 
 
     // ---------- SESSION ----------
@@ -141,7 +147,13 @@ class CartViewModel(
             )
 
             repository.addToCart(cartItem, currentTableId.value!!)
-            repository.syncCartCount(currentTableId.value!!)
+         //   repository.syncCartCount(currentTableId.value!!)
+
+            val tableNo = currentTableId.value ?: return@launch
+            val type = currentOrderType.value
+
+            tableSyncManager.syncCart(tableNo, type)
+            tableSyncManager.syncBill(tableNo, type)
         }
     }
 
@@ -170,8 +182,13 @@ class CartViewModel(
             )
 
 
+
+         //   repository.syncCartCount(tableNo)
             val tableNo = currentTableId.value ?: return@launch
-            repository.syncCartCount(tableNo)
+            val type = currentOrderType.value
+
+            tableSyncManager.syncCart(tableNo, type)
+            tableSyncManager.syncBill(tableNo, type)
         }
     }
 
@@ -184,17 +201,32 @@ class CartViewModel(
             repository.increaseById(item.id, item.tableId!!)
         }
     }
+//    fun decrease(productId: String, tableNo: String) {
+//        if (!canMutateCart()) return
+//
+//        viewModelScope.launch {
+//            repository.decrease(productId, tableNo)
+//
+//            // ✅ single source of truth
+//           // tableReleaseUseCase.releaseIfOrderingAndCartEmpty(tableNo)
+//        }
+//    }
+
+
     fun decrease(productId: String, tableNo: String) {
         if (!canMutateCart()) return
 
         viewModelScope.launch {
+
             repository.decrease(productId, tableNo)
 
-            // ✅ single source of truth
-           // tableReleaseUseCase.releaseIfOrderingAndCartEmpty(tableNo)
+            val currentTable = currentTableId.value ?: return@launch
+            val type = currentOrderType.value
+
+            tableSyncManager.syncCart(currentTable, type)
+            tableSyncManager.syncBill(currentTable, type)
         }
     }
-
 
 
     fun removeFromCart(productId: String, tableNo: String) {

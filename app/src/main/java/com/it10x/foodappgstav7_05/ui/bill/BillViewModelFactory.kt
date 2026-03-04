@@ -1,17 +1,13 @@
 package com.it10x.foodappgstav7_05.ui.bill
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.google.firebase.firestore.FirebaseFirestore
 import com.it10x.foodappgstav7_05.data.online.repository.CashierOrderSyncRepository
 import com.it10x.foodappgstav7_05.data.pos.AppDatabaseProvider
-import com.it10x.foodappgstav7_05.data.pos.repository.KotRepository
-import com.it10x.foodappgstav7_05.data.pos.repository.OrderSequenceRepository
-import com.it10x.foodappgstav7_05.data.pos.repository.OutletRepository
-import com.it10x.foodappgstav7_05.data.pos.repository.POSOrdersRepository
-import com.it10x.foodappgstav7_05.data.pos.repository.POSPaymentRepository
+import com.it10x.foodappgstav7_05.data.pos.manager.TableSyncManager
+import com.it10x.foodappgstav7_05.data.pos.repository.*
 import com.it10x.foodappgstav7_05.printer.PrinterManager
 
 class BillViewModelFactory(
@@ -27,6 +23,10 @@ class BillViewModelFactory(
 
             val db = AppDatabaseProvider.get(application)
 
+            // -----------------------------
+            // REPOSITORIES
+            // -----------------------------
+
             val orderSequenceRepository = OrderSequenceRepository(db)
 
             val printerManager = PrinterManager(application.applicationContext)
@@ -36,7 +36,27 @@ class BillViewModelFactory(
                 db.kotItemDao(),
                 db.tableDao()
             )
-            Log.d("BILL_FACTORY", "Factory created with orderType=$orderType | tableId=$tableId")
+
+            // ✅ ADD THIS (Missing Earlier)
+            val cartRepository = CartRepository(
+                db.cartDao(),
+                db.tableDao()
+            )
+
+            // ✅ ADD THIS (Missing Earlier)
+            val virtualTableRepository = VirtualTableRepository(
+                db.virtualTableDao(),
+                db.cartDao(),
+                db.kotItemDao()
+            )
+
+            // ✅ NOW THIS WORKS
+            val tableSyncManager = TableSyncManager(
+                tableRepo = kotRepository,
+                cartRepo = cartRepository,
+                virtualRepo = virtualTableRepository
+            )
+
             val ordersRepository = POSOrdersRepository(
                 db = db,
                 orderMasterDao = db.orderMasterDao(),
@@ -50,10 +70,12 @@ class BillViewModelFactory(
                 paymentDao = db.posOrderPaymentDao()
             )
 
-            // ✅ CREATE FIRESTORE INSTANCE
+            // -----------------------------
+            // FIRESTORE
+            // -----------------------------
+
             val firestore = FirebaseFirestore.getInstance()
 
-            // ✅ CREATE CASHIER SYNC REPOSITORY
             val cashierOrderSyncRepository = CashierOrderSyncRepository(
                 firestore = firestore,
                 kotItemDao = db.kotItemDao()
@@ -76,7 +98,8 @@ class BillViewModelFactory(
                 customerDao = db.posCustomerDao(),
                 ledgerDao = db.posCustomerLedgerDao(),
                 kotRepository = kotRepository,
-                cashierOrderSyncRepository = cashierOrderSyncRepository
+                cashierOrderSyncRepository = cashierOrderSyncRepository,
+                tableSyncManager = tableSyncManager
             ) as T
         }
 

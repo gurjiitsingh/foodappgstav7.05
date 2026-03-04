@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.CreationExtras
+import com.it10x.foodappgstav7_05.data.pos.manager.TableSyncManager
 import com.it10x.foodappgstav7_05.data.pos.repository.CartRepository
 import com.it10x.foodappgstav7_05.data.pos.repository.CategoryRepository
 import com.it10x.foodappgstav7_05.domain.usecase.TableReleaseUseCase
@@ -13,7 +14,8 @@ import com.it10x.foodappgstav7_05.domain.usecase.TableReleaseUseCase
 class CartViewModelFactory(
     private val repository: CartRepository,
     private val categoryRepository: CategoryRepository,
-    private val tableReleaseUseCase: TableReleaseUseCase
+    private val tableReleaseUseCase: TableReleaseUseCase,
+    private val tableSyncManager: TableSyncManager
 ) : ViewModelProvider.Factory {
 
     override fun <T : ViewModel> create(
@@ -26,6 +28,7 @@ class CartViewModelFactory(
                 repository = repository,
                 categoryRepository = categoryRepository,
                 tableReleaseUseCase = tableReleaseUseCase,
+                tableSyncManager = tableSyncManager,
                 savedStateHandle = handle
             ) as T
         }

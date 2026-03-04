@@ -31,7 +31,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.UUID
 import com.it10x.foodappgstav7_05.data.pos.repository.KotRepository
-
+import com.it10x.foodappgstav7_05.data.pos.repository.VirtualTableRepository
+import com.it10x.foodappgstav7_05.data.pos.manager.TableSyncManager
 class KitchenViewModel(
     app: Application,
     private val tableId: String,
@@ -60,12 +61,7 @@ class KitchenViewModel(
                 initialValue = emptyList()
             )
 
-//    init {
-//        Log.d(
-//            "VM_INIT_TRACE",
-//            "KitchenViewModel created with orderType=$orderType, tableId=$tableId, sessionId=$sessionId"
-//        )
-//    }
+
 
     private val kotRepository = KotRepository(
         AppDatabaseProvider.get(app).kotBatchDao(),
@@ -76,6 +72,18 @@ class KitchenViewModel(
     private val cartRepository = CartRepository(
         AppDatabaseProvider.get(app).cartDao(),
         AppDatabaseProvider.get(app).tableDao()
+    )
+
+    private val virtualTableRepository = VirtualTableRepository(
+        AppDatabaseProvider.get(app).virtualTableDao(),
+        AppDatabaseProvider.get(app).cartDao(),
+        AppDatabaseProvider.get(app).kotItemDao()
+    )
+
+    private val tableSyncManager = TableSyncManager(
+        tableRepo = kotRepository,
+        cartRepo = cartRepository,
+        virtualRepo = virtualTableRepository
     )
 
     private val printerManager =
@@ -152,9 +160,15 @@ class KitchenViewModel(
 
 
                 repository.clearCart(orderType, tableId)
-                cartRepository.syncCartCount(tableId)
-                //kotRepository.syncKinchenCount(tableId)
-                kotRepository.syncBillCount(tableId)
+//                cartRepository.syncCartCount(tableId)
+//                kotRepository.syncBillCount(tableId)
+                tableSyncManager.syncCart(tableId, orderType)
+                tableSyncManager.syncBill(tableId, orderType)
+
+//                val tableNo = currentTableId.value!!
+//                val type = currentOrderType.value
+//
+//                tableSyncManager.syncCart(tableNo, type)
 
             } catch (e: Exception) {
                 //  Log.e("KITCHEN_DEBUG", " Exception during placeOrder()", e)

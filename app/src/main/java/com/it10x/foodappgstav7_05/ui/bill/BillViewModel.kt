@@ -44,7 +44,7 @@ import com.it10x.foodappgstav7_05.data.pos.entities.PosCustomerLedgerEntity
 import com.it10x.foodappgstav7_05.data.pos.repository.KotRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.update
-
+import com.it10x.foodappgstav7_05.data.pos.manager.TableSyncManager
 class BillViewModel(
     private val kotItemDao: KotItemDao,
     private val orderMasterDao: OrderMasterDao,
@@ -61,7 +61,8 @@ class BillViewModel(
     private val customerDao: PosCustomerDao,
     private val ledgerDao: PosCustomerLedgerDao,
     private val kotRepository: KotRepository,
-    private val cashierOrderSyncRepository: CashierOrderSyncRepository
+    private val cashierOrderSyncRepository: CashierOrderSyncRepository,
+    private val tableSyncManager: TableSyncManager
 ) : ViewModel() {
 
     // --------------------------------------------------------
@@ -643,11 +644,32 @@ class BillViewModel(
         }
     }
 
+//    fun deleteItem(itemId: String) {
+//        viewModelScope.launch {
+//            try {
+//                kotItemDao.deleteItemById(itemId)   // 👈 use internal tableId
+//                kotRepository.syncBillCount(tableId)         // 👈 update table status here
+//            } catch (e: Exception) {
+//                Log.e("DELETE", "Failed to delete item", e)
+//            }
+//        }
+//    }
+
+
     fun deleteItem(itemId: String) {
         viewModelScope.launch {
             try {
-                kotItemDao.deleteItemById(itemId)   // 👈 use internal tableId
-                kotRepository.syncBillCount(tableId)         // 👈 update table status here
+
+                // 1️⃣ Delete from KOT
+                kotItemDao.deleteItemById(itemId)
+
+                // 2️⃣ Update real table bill counters
+                kotRepository.syncBillCount(tableId)
+
+                // 3️⃣ Sync to correct table (DINE_IN / TAKEAWAY / DELIVERY)
+                tableSyncManager.syncCart(tableId, orderType)
+                tableSyncManager.syncBill(tableId, orderType)
+
             } catch (e: Exception) {
                 Log.e("DELETE", "Failed to delete item", e)
             }

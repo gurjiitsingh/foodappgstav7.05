@@ -5,6 +5,8 @@ import com.it10x.foodappgstav7_05.data.pos.dao.CartDao
 import com.it10x.foodappgstav7_05.data.pos.dao.TableDao
 import com.it10x.foodappgstav7_05.data.pos.entities.PosCartEntity
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.update
+import kotlin.compareTo
 
 class CartRepository(
     private val dao: CartDao,
@@ -125,20 +127,34 @@ class CartRepository(
 
 
 // ---------- DECREASE (SESSION BASED – FIXED) ----------
-suspend fun decrease(productId: String, tableNo: String) {
 
-    val existing = dao.getItemByIdForTable(productId, tableNo) ?: return
-    Log.d(
-        "TABLE_DEBUG",
-        "DECREASE_CLICK (In CartRepository)  tableId=${tableNo} Product: ${existing}"
-    )
-    if (existing.quantity > 1) {
-        dao.update(existing.copy(quantity = existing.quantity - 1))
-    } else {
-        dao.delete(existing)
+    suspend fun decrease(productId: String, tableNo: String) {
+        val existing = dao.getItemByIdForTable(productId, tableNo) ?: return
+
+        if (existing.quantity > 1) {
+            dao.update(existing.copy(quantity = existing.quantity - 1))
+        } else {
+            dao.delete(existing)
+        }
+
+        syncCartCount(tableNo)
     }
-    syncCartCount(tableNo)
-}
+
+
+//suspend fun decrease(productId: String, tableNo: String) {
+//
+//    val existing = dao.getItemByIdForTable(productId, tableNo) ?: return
+//    Log.d(
+//        "TABLE_DEBUG",
+//        "DECREASE_CLICK (In CartRepository)  tableId=${tableNo} Product: ${existing}"
+//    )
+//    if (existing.quantity > 1) {
+//        dao.update(existing.copy(quantity = existing.quantity - 1))
+//    } else {
+//        dao.delete(existing)
+//    }
+//  //  syncCartCount(tableNo)
+//}
 
     private fun normalizeNote(note: String?): String {
         return note?.trim().orEmpty()
@@ -147,5 +163,7 @@ suspend fun decrease(productId: String, tableNo: String) {
     suspend fun updatePrintFlag(id: Long, value: Boolean) {
         dao.updatePrintFlag(id, value)
     }
+
+
 
 }

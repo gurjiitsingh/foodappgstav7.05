@@ -380,4 +380,8 @@ WHERE tableNo = :tableNo
 
     @Query("DELETE FROM pos_kot_items")
     suspend fun deleteAll()
+
+
+    @Query("SELECT COUNT(*) FROM pos_kot_items WHERE tableNo = :tableId AND status != 'SERVED'")
+    suspend fun getKitchenCountForTable(tableId: String): Int?
 }
