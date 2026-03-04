@@ -95,7 +95,7 @@ class GlobalOrderSyncManager(
                                     quantity = (itemDoc.getLong("quantity") ?: 1L).toInt(),
                                     taxRate = itemDoc.getDouble("taxRate") ?: 0.0,
                                     taxType = "exclusive",
-                                    note = "",
+                                    note = itemDoc.getString("note") ?: "",
                                     modifiersJson = itemDoc.getString("modifiersJson") ?: "",
                                     kitchenPrintReq = itemDoc.getBoolean("kitchenPrintReq") ?: true,
                                     createdAt = System.currentTimeMillis()

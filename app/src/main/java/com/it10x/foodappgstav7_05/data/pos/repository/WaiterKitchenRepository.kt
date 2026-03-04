@@ -28,14 +28,6 @@ class WaiterKitchenRepository(
 
 
 
-
-//            cartList.forEach {
-//                Log.d(
-//                    "WAITER_CART_DEBUG",
-//                    "Cart -> ${it.name} | Qty=${it.quantity} | kitchenPrintReq=${it.kitchenPrintReq}"
-//                )
-//            }
-
             val orderId = firestore.collection("waiter_orders").document().id
             val batch = firestore.batch()
 

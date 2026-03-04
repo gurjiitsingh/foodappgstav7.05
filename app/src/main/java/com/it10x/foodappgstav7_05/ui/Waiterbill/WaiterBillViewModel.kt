@@ -612,7 +612,10 @@ class WaiterBillViewModel(
                     paymentRepository.insertPayments(paymentEntities)
                 }
 
-                repository.finalizeTableAfterPayment(tableId)
+                    repository.finalizeTableAfterPayment(
+                        tableNo = tableId,
+                        orderType = orderType
+                    )
             }
 
             printOrder(orderMaster, orderItems)
