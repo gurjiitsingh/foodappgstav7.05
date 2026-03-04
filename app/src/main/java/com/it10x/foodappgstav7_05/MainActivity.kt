@@ -575,58 +575,52 @@ class MainActivity : ComponentActivity() {
                 ) {
                 Scaffold(
                     topBar = {
+
                         val navBackStackEntry by navController.currentBackStackEntryAsState()
                         val currentRoute = navBackStackEntry?.destination?.route
                         val isOnline by rememberNetworkStatus()
+
                         CenterAlignedTopAppBar(
 
-                            title = {
+                            title = {},
 
-                                val isOnline by rememberNetworkStatus()
+                            navigationIcon = {
 
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
 
+                                    // Drawer button
+                                    IconButton(
+                                        onClick = { scope.launch { drawerState.open() } }
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Menu,
+                                            contentDescription = "Menu"
+                                        )
+                                    }
+
+                                    // Network indicator
                                     Text(
                                         text = if (isOnline) "🟢" else "🔴",
+                                        modifier = Modifier.padding(start = 6.dp),
                                         color = if (isOnline) Color(0xFF2E7D32) else Color(0xFFD32F2F),
                                         style = MaterialTheme.typography.labelLarge,
                                         fontWeight = FontWeight.Bold
                                     )
-
                                 }
                             },
-
-                            // LEFT → Drawer
-                            navigationIcon = {
-                                IconButton(
-                                    onClick = { scope.launch { drawerState.open() } }
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Menu,
-                                        contentDescription = "Menu"
-                                    )
-                                }
-                            },
-
-                            // RIGHT → POS NAVIGATION ICONS
-
 
                             actions = {
 
                                 val commonShape = RoundedCornerShape(8.dp)
                                 val commonHeight = 48.dp
 
-                                // ✅ MAIN DEVICE UI
                                 if (role == PosRole.MAIN) {
 
-                                    // 🪑 TABLES
                                     IconButton(
                                         onClick = {
-                                            navController.navigate("tables") {
-                                                launchSingleTop = true
-                                            }
+                                            navController.navigate("tables") { launchSingleTop = true }
                                         },
                                         modifier = Modifier
                                             .size(commonHeight)
@@ -640,22 +634,15 @@ class MainActivity : ComponentActivity() {
                                     ) {
                                         Icon(
                                             imageVector = Icons.Default.TableBar,
-                                            contentDescription = "Tables",
-                                            tint = if (currentRoute == "tables")
-                                                MaterialTheme.colorScheme.onPrimary
-                                            else
-                                                MaterialTheme.colorScheme.onSurfaceVariant
+                                            contentDescription = "Tables"
                                         )
                                     }
 
                                     Spacer(Modifier.width(6.dp))
 
-                                    // 🖥 POS
                                     IconButton(
                                         onClick = {
-                                            navController.navigate("pos") {
-                                                launchSingleTop = true
-                                            }
+                                            navController.navigate("pos") { launchSingleTop = true }
                                         },
                                         modifier = Modifier
                                             .size(commonHeight)
@@ -669,22 +656,15 @@ class MainActivity : ComponentActivity() {
                                     ) {
                                         Icon(
                                             imageVector = Icons.Default.PointOfSale,
-                                            contentDescription = "POS",
-                                            tint = if (currentRoute == "pos")
-                                                MaterialTheme.colorScheme.onPrimary
-                                            else
-                                                MaterialTheme.colorScheme.onSurfaceVariant
+                                            contentDescription = "POS"
                                         )
                                     }
 
                                     Spacer(Modifier.width(6.dp))
 
-                                    // 🧾 ORDERS
                                     IconButton(
                                         onClick = {
-                                            navController.navigate("local_orders") {
-                                                launchSingleTop = true
-                                            }
+                                            navController.navigate("local_orders") { launchSingleTop = true }
                                         },
                                         modifier = Modifier
                                             .size(commonHeight)
@@ -698,11 +678,7 @@ class MainActivity : ComponentActivity() {
                                     ) {
                                         Icon(
                                             imageVector = Icons.Default.ReceiptLong,
-                                            contentDescription = "Orders",
-                                            tint = if (currentRoute == "local_orders")
-                                                MaterialTheme.colorScheme.onPrimary
-                                            else
-                                                MaterialTheme.colorScheme.onSurfaceVariant
+                                            contentDescription = "Orders"
                                         )
                                     }
 
@@ -711,15 +687,11 @@ class MainActivity : ComponentActivity() {
                                     StopSoundButton(viewModel = realtimeOrdersVM)
                                 }
 
-                                // ✅ WAITER DEVICE UI
                                 if (role == PosRole.WAITER) {
 
-                                    // 🍽 WAITER POS
                                     IconButton(
                                         onClick = {
-                                            navController.navigate("posWaiter") {
-                                                launchSingleTop = true
-                                            }
+                                            navController.navigate("posWaiter") { launchSingleTop = true }
                                         },
                                         modifier = Modifier
                                             .size(commonHeight)
@@ -739,12 +711,9 @@ class MainActivity : ComponentActivity() {
 
                                     Spacer(Modifier.width(6.dp))
 
-                                    // 🧾 ORDERS
                                     IconButton(
                                         onClick = {
-                                            navController.navigate("local_orders") {
-                                                launchSingleTop = true
-                                            }
+                                            navController.navigate("local_orders") { launchSingleTop = true }
                                         },
                                         modifier = Modifier
                                             .size(commonHeight)
@@ -762,14 +731,9 @@ class MainActivity : ComponentActivity() {
                                         )
                                     }
                                 }
-
-
-
-
                             }
-
-
                         )
+
                     }
 
                 ) { paddingValues ->
