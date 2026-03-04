@@ -59,6 +59,7 @@ import com.it10x.foodappgstav7_05.data.pos.viewmodel.ProductsLocalViewModelFacto
 import com.it10x.foodappgstav7_05.ui.components.PosTouchKeyboard
 import com.it10x.foodappgstav7_05.ui.components.PosTouchKeyboardCompact
 import com.it10x.foodappgstav7_05.ui.components.TouchKeyboardPhone
+import com.it10x.foodappgstav7_05.viewmodel.VirtualTableViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -99,6 +100,8 @@ fun PosScreen(
     val tables by posTableViewModel.tables.collectAsState()
 
     val tableVm: PosTableViewModel = viewModel()
+    val virtualTableViewModel: VirtualTableViewModel = viewModel()
+    val virtualTables by virtualTableViewModel.tables.collectAsState()
 
     val selectedTableName1 = tables
         .firstOrNull { it.table.id == tableId }
@@ -118,7 +121,8 @@ fun PosScreen(
             orderMasterDao = db.orderMasterDao(),
             orderProductDao = db.orderProductDao(),
             cartDao = db.cartDao(),
-            tableDao = db.tableDao()
+            tableDao = db.tableDao(),
+            virtualTableDao = db.virtualTableDao()
         )
     }
 
@@ -624,7 +628,35 @@ fun PosScreen(
                         onDismiss = { showCategorySelector = false }
                     )
                 }
-                if (showTableSelector && (orderType == "DINE_IN" || orderType == "TAKEAWAY" || orderType == "DELIVERY" )) {
+
+                LaunchedEffect(orderType) {
+                    if (orderType == "TAKEAWAY" || orderType == "DELIVERY") {
+                        virtualTableViewModel.observe(orderType)
+                    }
+                }
+
+                if (showTableSelector && (orderType == "TAKEAWAY" || orderType == "DELIVERY")) {
+
+                    VirtualTableSelectorGrid(
+                        tables = virtualTables,
+                        onAddNew = {
+                            val nextNumber = System.currentTimeMillis().toInt()
+                            virtualTableViewModel.createNew(orderType, nextNumber)
+                        },
+                        onTableSelected = { table ->
+                            posSessionViewModel.setTable(
+                                tableId = table.id,
+                                tableName = table.tableName
+                            )
+                            showTableSelector = false
+                        },
+                        onDismiss = { showTableSelector = false }
+                    )
+                }
+
+
+                if (showTableSelector && (orderType == "DINE_IN")) {
+
                     TableSelectorGrid(
                         tables = tables, // ✅ use dynamic list
                         selectedTable = tableId,
@@ -660,7 +692,9 @@ fun PosScreen(
                         ordersViewModel = ordersViewModel,
                         tableViewModel = tableVm,
                         orderType = orderType,
-                        tableNo = tableId ?: orderType,
+                       // tableNo = tableId ?: orderType,
+                       // tableNo = if (tableId.isNotBlank()) tableId else orderType,
+                        tableNo = tableId.ifBlank { orderType },
                         tableName = selectedTableName,
                         paymentType = paymentType,
                         onPaymentChange = { paymentType = it },

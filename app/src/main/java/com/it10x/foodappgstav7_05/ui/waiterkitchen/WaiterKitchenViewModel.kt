@@ -92,57 +92,76 @@ class WaiterKitchenViewModel(
         tableNo: String,
         deviceId: String,
         deviceName: String?,
-
     ) {
-        if (isProcessing) return   // 🔥 HARD STOP
+        if (isProcessing) return   // 🔥 Prevent duplicate presses
 
         viewModelScope.launch {
+            // Always get fresh items from DB
+            val dao = AppDatabaseProvider.get(getApplication()).cartDao()
+            val latestCart = try {
+                dao.getCartItemsByTableId(tableNo).first()
+            } catch (e: Exception) {
+                Log.e("WaiterKitchenVM", "❌ Failed to load cart from DB: ${e.message}", e)
+                emptyList()
+            }
 
-            if (cartList.isEmpty()) return@launch
+            if (latestCart.isEmpty()) {
+                Log.w("WaiterKitchenVM", "⚠️ No items found in DB for table=$tableNo")
+                return@launch
+            }
 
+            Log.d("WaiterKitchenVM", "🚀 Send All triggered for table=$tableNo, total=${latestCart.size}")
+            latestCart.forEachIndexed { index, item ->
+                Log.d(
+                    "WaiterKitchenVM",
+                    "📦 [$index] name=${item.name}, qty=${item.quantity}, note='${item.note ?: ""}'"
+                )
+            }
+
+            if (isProcessing) return@launch
             isProcessing = true
             _loading.value = true
 
             try {
-                // 1️⃣ Send to Firestore FIRST
+                // ✅ 1️⃣ Send to Firestore (fresh list)
                 val success = waiterKitchenRepository.sendOrderToFireStore(
-                    cartList = cartList,
+                    cartList = latestCart,
                     tableNo = tableNo,
                     sessionId = sessionId,
                     orderType = orderType,
                     deviceId = deviceId,
                     deviceName = deviceName
                 )
-               // Log.e("WAITER_FLOW", "Firestore upload waiterkitchenviewmodel")
+
                 if (!success) {
-                    Log.e("WAITER_FLOW", "Firestore upload failed")
+                    Log.e("WaiterKitchenVM", "❌ Firestore upload failed")
                     return@launch
                 }
 
-                // 2️⃣ Save to Bill (Local KOT → DONE state)
+                // ✅ 2️⃣ Save locally (Bill)
                 val billSaved = saveCartItemToBillView(
                     orderType = orderType,
                     sessionId = sessionId,
                     tableNo = tableNo,
-                    cartItems = cartList,
+                    cartItems = latestCart,
                     deviceId = deviceId,
                     deviceName = deviceName,
                     appVersion = "appVersion"
                 )
 
                 if (!billSaved) {
-                    Log.e("WAITER_FLOW", "Bill save failed")
+                    Log.e("WaiterKitchenVM", "❌ Bill save failed")
                     return@launch
                 }
 
-                // 3️⃣ Clear Cart ONLY after both succeed
+                // ✅ 3️⃣ Clear Cart (after success)
                 repository.clearCart(orderType, tableNo)
                 cartRepository.syncCartCount(tableNo)
 
-               // Log.d("WAITER_FLOW", "✅ Firestore + Bill saved successfully")
+             //   Log.d("WaiterKitchenVM", "✅ Firestore + Bill saved successfully for ${latestCart.size} items")
 
             } catch (e: Exception) {
-                Log.e("WAITER_FLOW", "Error in waiterCartToBill", e)
+                Log.e("WaiterKitchenVM", "❌ Error in waiterCartToBill: ${e.message}", e)
             } finally {
                 _loading.value = false
                 isProcessing = false

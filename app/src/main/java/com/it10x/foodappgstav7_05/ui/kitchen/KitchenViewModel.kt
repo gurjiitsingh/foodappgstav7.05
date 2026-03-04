@@ -60,12 +60,12 @@ class KitchenViewModel(
                 initialValue = emptyList()
             )
 
-    init {
-        Log.d(
-            "VM_INIT_TRACE",
-            "KitchenViewModel created with orderType=$orderType, tableId=$tableId, sessionId=$sessionId"
-        )
-    }
+//    init {
+//        Log.d(
+//            "VM_INIT_TRACE",
+//            "KitchenViewModel created with orderType=$orderType, tableId=$tableId, sessionId=$sessionId"
+//        )
+//    }
 
     private val kotRepository = KotRepository(
         AppDatabaseProvider.get(app).kotBatchDao(),
@@ -85,11 +85,7 @@ class KitchenViewModel(
 
 
 
-    fun markCancelled(itemId: String) {
-        viewModelScope.launch {
-            kotItemDao.updateStatus(itemId, "CANCELLED")
-        }
-    }
+
     fun getPendingItems(orderRef: String, orderType: String): Flow<List<PosKotItemEntity>> {
 
 
@@ -109,11 +105,11 @@ class KitchenViewModel(
         deviceName: String?,
         appVersion: String?
     ) {
-         Log.d(
-             "ORDER_TYPE_TRACE",
-             "cartToKotMainPOS called with orderType=$orderType, tableNo=$tableNo, sessionId=$sessionId"
-         )
-           logAllKotItems()
+//         Log.d(
+//             "ORDER_TYPE_TRACE",
+//             "cartToKotMainPOS called with orderType=$orderType, tableNo=$tableNo, sessionId=$sessionId"
+//         )
+         //  logAllKotItems()
         viewModelScope.launch {
             _loading.value = true
 
@@ -336,21 +332,21 @@ class KitchenViewModel(
 
             val items = kotItemDao.getTotalKotItemsOnce()
 
-            Log.d("KOT_DEBUG", "Total items = ${items.size}")
+         //   Log.d("KOT_DEBUG", "Total items = ${items.size}")
 
-            items.forEach { item ->
-                Log.d(
-                    "KOT_DEBUG",
-                    "Qty=${item.quantity}, " +
-                            "Table=${item.tableNo}, " +
-                            "Name=${item.name}, " +
-                            "Status=${item.status}, " +
-                            "Printed=${item.kitchenPrinted}"
-
-                           // "BatchId=${item.kotBatchId}, " +
-                           // "ID=${item.id}"
-                )
-            }
+//            items.forEach { item ->
+//                Log.d(
+//                    "KOT_DEBUG",
+//                    "Qty=${item.quantity}, " +
+//                            "Table=${item.tableNo}, " +
+//                            "Name=${item.name}, " +
+//                            "Status=${item.status}, " +
+//                            "Printed=${item.kitchenPrinted}"
+//
+//                           // "BatchId=${item.kotBatchId}, " +
+//                           // "ID=${item.id}"
+//                )
+//            }
         }
     }
 

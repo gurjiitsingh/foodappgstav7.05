@@ -132,7 +132,8 @@ fun WaiterPosScreen(
             orderMasterDao = db.orderMasterDao(),
             orderProductDao = db.orderProductDao(),
             cartDao = db.cartDao(),
-            tableDao = db.tableDao()
+            tableDao = db.tableDao(),
+            virtualTableDao = db.virtualTableDao()
         )
     }
     val orderRef = if (orderType == "DINE_IN") tableId ?: "" else orderType

@@ -114,7 +114,8 @@ class MainActivity : ComponentActivity() {
             orderMasterDao = db.orderMasterDao(),
             orderProductDao = db.orderProductDao(),
             cartDao = db.cartDao(),
-            tableDao = db.tableDao()
+            tableDao = db.tableDao(),
+            virtualTableDao = db.virtualTableDao()
         )
 
         val tableId = "Bar_B_4"

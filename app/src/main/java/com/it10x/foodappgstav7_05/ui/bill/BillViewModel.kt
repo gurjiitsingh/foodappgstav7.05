@@ -336,7 +336,7 @@ class BillViewModel(
                 if (itemSubtotal == 0.0) 0.0
                 else taxTotal * (1 - safeDiscount / itemSubtotal)
 
-            Log.d("PAY_DEBUG", "adjustedTax: $adjustedTax")
+
 
             val grandTotal = (itemSubtotal - safeDiscount) + adjustedTax
 
@@ -362,15 +362,7 @@ class BillViewModel(
                     .filter { it.mode == "WAITER_PENDING" }
                     .sumOf { it.amount }
 
-//            val paidAmount = when {
-//                deliveryPending > 0 -> 0.0
-//                else -> totalPaid
-//            }
-//
-//            val dueAmount = when {
-//                deliveryPending > 0 -> grandTotal
-//                else -> (grandTotal - totalPaid).coerceAtLeast(0.0)
-//            }
+
 
                 val paidAmount = when {
                     deliveryPending > 0 -> 0.0
@@ -385,12 +377,7 @@ class BillViewModel(
                 }
 
 
-//            val paymentStatus = when {
-//                deliveryPending > 0 -> "DELIVERY_PENDING"
-//                totalPaid == 0.0 && totalCredit > 0 -> "CREDIT"
-//                dueAmount > 0 -> "PARTIAL"
-//                else -> "PAID"
-//            }
+
 
                 val paymentStatus = when {
                     waiterPending > 0 -> "WAITER_PENDING"
@@ -411,11 +398,11 @@ class BillViewModel(
                     return@launch
                 }
 
-            Log.d("PAY_DEBUG", "---- PAY BILL START ----")
-            Log.d("PAY_DEBUG", "Payments: $payments")
-            Log.d("PAY_DEBUG", "Name: $name")
-            Log.d("PAY_DEBUG", "Phone: $phone")
-            Log.d("PAY_DEBUG", "GrandTotal: ${_uiState.value.total}")
+//            Log.d("PAY_DEBUG", "---- PAY BILL START ----")
+//            Log.d("PAY_DEBUG", "Payments: $payments")
+//            Log.d("PAY_DEBUG", "Name: $name")
+//            Log.d("PAY_DEBUG", "Phone: $phone")
+//            Log.d("PAY_DEBUG", "GrandTotal: ${_uiState.value.total}")
 
             // ===========================
 // ENSURE CUSTOMER EXISTS (IF PHONE ENTERED)
@@ -467,9 +454,7 @@ class BillViewModel(
              //   val existingCustomer = customerDao.getCustomerById(inputPhone)
                 val existingCustomer = customerDao.getCustomerByPhone(inputPhone)
 
-                Log.e("CREDIT", "customer found: ${existingCustomer}")
 
-                Log.e("CREDIT", "customer hew credit: ${totalCredit}")
 
 
                     customerDao.increaseDue(inputPhone, totalCredit)
@@ -503,7 +488,7 @@ class BillViewModel(
             // ===========================
             // ORDER MASTER
             // ===========================
-                Log.d("BILL_FACTORY", "BilViewmodel created with orderType=$orderType | tableId=$tableId")
+//                Log.d("BILL_FACTORY", "BilViewmodel created with orderType=$orderType | tableId=$tableId")
             val orderMaster = PosOrderMasterEntity(
                 id = orderId,
                 srno = srno,
@@ -637,7 +622,11 @@ class BillViewModel(
                     paymentRepository.insertPayments(paymentEntities)
                 }
 
-                repository.finalizeTableAfterPayment(tableId)
+               // repository.finalizeTableAfterPayment(tableId)
+                    repository.finalizeTableAfterPayment(
+                        tableNo = tableId,
+                        orderType = orderType
+                    )
             }
 
             printOrder(orderMaster, orderItems)

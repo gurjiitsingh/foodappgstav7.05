@@ -1,2 +1,122 @@
 package com.it10x.foodappgstav7_05.ui.pos
 
+
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import com.it10x.foodappgstav7_05.viewmodel.PosTableViewModel
+import androidx.compose.animation.animateContentSize
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import com.it10x.foodappgstav7_05.data.pos.entities.VirtualTableEntity
+
+
+@Composable
+fun VirtualTableSelectorGrid(
+    tables: List<VirtualTableEntity>,
+    onAddNew: () -> Unit,
+    onTableSelected: (VirtualTableEntity) -> Unit,
+    onDismiss: () -> Unit
+) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Surface(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(8.dp),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+            ) {
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    IconButton(onClick = onDismiss) {
+                        Icon(Icons.Default.Close, contentDescription = null)
+                    }
+                }
+
+                LazyVerticalGrid(
+                    columns = GridCells.Adaptive(minSize = 100.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+
+                    // 🔥 PLUS BUTTON
+                    item {
+                        Surface(
+                            modifier = Modifier
+                                .aspectRatio(1f)
+                                .clickable { onAddNew() },
+                            shape = RoundedCornerShape(12.dp),
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Text("+", style = MaterialTheme.typography.headlineLarge)
+                            }
+                        }
+                    }
+
+                    // 🔥 VIRTUAL TABLES
+                    items(tables) { table ->
+
+                        Surface(
+                            modifier = Modifier
+                                .aspectRatio(1f)
+                                .clickable { onTableSelected(table) },
+                            shape = RoundedCornerShape(12.dp),
+                            tonalElevation = 2.dp
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(8.dp),
+                                verticalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = table.tableName,
+                                    style = MaterialTheme.typography.titleMedium
+                                )
+
+                                Column {
+                                    if (table.cartCount > 0) {
+                                        Text("🛒 ${table.cartCount}")
+                                    }
+                                    if (table.billCount > 0) {
+                                        Text("🧾 ${table.billCount}")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

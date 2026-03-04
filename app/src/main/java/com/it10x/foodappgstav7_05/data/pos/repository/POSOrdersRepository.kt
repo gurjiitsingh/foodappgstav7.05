@@ -8,6 +8,7 @@ import com.it10x.foodappgstav7_05.data.pos.dao.KotItemDao
 import com.it10x.foodappgstav7_05.data.pos.dao.OrderMasterDao
 import com.it10x.foodappgstav7_05.data.pos.dao.OrderProductDao
 import com.it10x.foodappgstav7_05.data.pos.dao.TableDao
+import com.it10x.foodappgstav7_05.data.pos.dao.VirtualTableDao
 import com.it10x.foodappgstav7_05.data.pos.entities.PosCartEntity
 import com.it10x.foodappgstav7_05.data.pos.entities.PosOrderItemEntity
 import com.it10x.foodappgstav7_05.data.pos.entities.PosOrderMasterEntity
@@ -21,7 +22,8 @@ class POSOrdersRepository(
     private val orderMasterDao: OrderMasterDao,
     private val orderProductDao: OrderProductDao,
     private val cartDao: CartDao,
-    private val tableDao: TableDao
+    private val tableDao: TableDao,
+    private val virtualTableDao: VirtualTableDao
 ) {
 
     // -------------------------
@@ -95,19 +97,39 @@ class POSOrdersRepository(
 
 
 
-    suspend fun finalizeTableAfterPayment(tableNo: String) {
+//    suspend fun finalizeTableAfterPayment(tableNo: String) {
+//
+//        // clear KOT
+//        db.kotItemDao().clearForTable(tableNo)
+//
+//        // reset live counters
+//        tableDao.updateBill(tableNo, 0, 0.0)
+//        tableDao.setKitchenCount(tableNo, 0)
+//        tableDao.setCartCount(tableNo, 0)
+//
+//
+//    }
 
-        // clear KOT
+    suspend fun finalizeTableAfterPayment(
+        tableNo: String,
+        orderType: String
+    ) {
+
+        // 🔹 clear KOT always
         db.kotItemDao().clearForTable(tableNo)
 
-        // reset live counters
-        tableDao.updateBill(tableNo, 0, 0.0)
-        tableDao.setKitchenCount(tableNo, 0)
-        tableDao.setCartCount(tableNo, 0)
+        if (orderType == "DINE_IN") {
 
-        // release table
-        //tableDao.updateStatus(tableNo, "AVAILABLE")
-        //tableDao.setActiveOrder(tableNo, "")
+            // ✅ Reset physical table counters only
+            tableDao.updateBill(tableNo, 0, 0.0)
+            tableDao.setKitchenCount(tableNo, 0)
+            tableDao.setCartCount(tableNo, 0)
+
+        } else {
+
+            // ✅ DELETE virtual table row completely
+            virtualTableDao.deleteById(tableNo)
+        }
     }
 
 
