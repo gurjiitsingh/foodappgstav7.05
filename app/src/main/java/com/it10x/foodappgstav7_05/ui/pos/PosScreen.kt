@@ -577,12 +577,13 @@ fun PosScreen(
                             onClick = { showCategorySelector = true },
                             modifier = Modifier
                                 .size(commonHeight)
-                                .background(MaterialTheme.colorScheme.primary, shape = commonShape)
+                                .background(MaterialTheme.colorScheme.secondary, shape = commonShape)
+
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Category,
                                 contentDescription = "Category",
-                                tint = MaterialTheme.colorScheme.onPrimary
+                                tint = MaterialTheme.colorScheme.onSecondary
                             )
                         }
 

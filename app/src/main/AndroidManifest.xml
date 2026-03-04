@@ -29,6 +29,8 @@
         android:required="false"
         android:usesPermissionFlags="neverForLocation" />
 
+    <!-- Internet detection -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <!-- ========================= -->
     <!-- USB HOST SUPPORT -->
     <!-- ========================= -->

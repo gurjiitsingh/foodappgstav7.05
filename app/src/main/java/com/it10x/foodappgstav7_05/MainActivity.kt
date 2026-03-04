@@ -77,6 +77,7 @@ import androidx.compose.material.icons.filled.TableBar
 import androidx.compose.material.icons.filled.PointOfSale
 import androidx.compose.material.icons.filled.ReceiptLong
 import androidx.compose.material.icons.filled.VolumeOff
+import androidx.compose.ui.Alignment
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
@@ -85,7 +86,7 @@ import com.it10x.foodappgstav7_05.core.PosRoleManager
 import com.it10x.foodappgstav7_05.ui.setting.DeviceRoleSelectionScreen
 import com.it10x.foodappgstav7_05.data.pos.dao.ProcessedCloudOrderDao
 import com.it10x.foodappgstav7_05.firebase.ClientRegistry
-
+import com.it10x.foodappgstav7_05.core.rememberNetworkStatus
 class MainActivity : ComponentActivity() {
     private lateinit var globalOrderSyncManager: GlobalOrderSyncManager
 
@@ -576,9 +577,26 @@ class MainActivity : ComponentActivity() {
                     topBar = {
                         val navBackStackEntry by navController.currentBackStackEntryAsState()
                         val currentRoute = navBackStackEntry?.destination?.route
+                        val isOnline by rememberNetworkStatus()
                         CenterAlignedTopAppBar(
 
-                            title = {},
+                            title = {
+
+                                val isOnline by rememberNetworkStatus()
+
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+
+                                    Text(
+                                        text = if (isOnline) "🟢" else "🔴",
+                                        color = if (isOnline) Color(0xFF2E7D32) else Color(0xFFD32F2F),
+                                        style = MaterialTheme.typography.labelLarge,
+                                        fontWeight = FontWeight.Bold
+                                    )
+
+                                }
+                            },
 
                             // LEFT → Drawer
                             navigationIcon = {

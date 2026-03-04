@@ -19,7 +19,8 @@ import androidx.compose.ui.unit.sp
 import com.it10x.foodappgstav7_05.ui.cart.CartRow
 import com.it10x.foodappgstav7_05.ui.cart.CartViewModel
 import com.it10x.foodappgstav7_05.ui.pos.SummaryRow
-
+import com.it10x.foodappgstav7_05.utils.isInternetAvailable
+import android.widget.Toast
 @Composable
 fun WaiterKitchenMobile(
     sessionId: String,
@@ -32,6 +33,9 @@ fun WaiterKitchenMobile(
 ) {
     val cartItems by cartViewModel.cart.collectAsState(initial = emptyList())
     val context = LocalContext.current
+    val isOnline by remember {
+        mutableStateOf(isInternetAvailable(context))
+    }
 
     LaunchedEffect(cartItems) {
         if (cartItems.isEmpty()) onKitchenEmpty()
@@ -116,14 +120,27 @@ fun WaiterKitchenMobile(
 
 
             Button(
-                enabled = !loading,
+                enabled = !loading && isOnline,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF16A34A)
+                    containerColor = if (isOnline)
+                        Color(0xFF16A34A)
+                    else
+                        Color(0xFF9E9E9E)
                 ),
                 onClick = {
+
+                    if (!isOnline) {
+                        Toast.makeText(
+                            context,
+                            "No internet connection. Cannot send order.",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        return@Button
+                    }
+
                     val deviceId = Settings.Secure.getString(
                         context.contentResolver,
                         Settings.Secure.ANDROID_ID
@@ -133,8 +150,7 @@ fun WaiterKitchenMobile(
                         cartList = cartItems,
                         tableNo = tableNo,
                         deviceId = deviceId,
-                        deviceName = Build.MODEL ?: "Unknown Device",
-
+                        deviceName = Build.MODEL ?: "Unknown Device"
                     )
                 }
             ) {
@@ -143,9 +159,15 @@ fun WaiterKitchenMobile(
                     contentDescription = null,
                     tint = Color.White
                 )
+
                 Spacer(Modifier.width(6.dp))
-                Text("Send All", color = Color.White)
+
+                Text(
+                    if (isOnline) "Send All" else "Offline",
+                    color = Color.White
+                )
             }
+
         }
     }
 
