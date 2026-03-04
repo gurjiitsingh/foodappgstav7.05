@@ -38,22 +38,24 @@ class VirtualTableViewModel(app: Application) : AndroidViewModel(app) {
         selectedType.value = type
     }
 
-    fun createNew(type: String, srno: Int) {
+    fun createNew(type: String, srno: Int): VirtualTableEntity {
+
+        val prefix = if (type == "TAKEAWAY") "TA" else "DL"
+
+        val newRow = VirtualTableEntity(
+            id = UUID.randomUUID().toString(),
+            tableName = "$prefix-$srno",
+            orderType = type,
+            status = TableStatus.AVAILABLE,
+            createdAt = System.currentTimeMillis(),
+            updatedAt = System.currentTimeMillis()
+        )
+
         viewModelScope.launch {
-
-            val prefix = if (type == "TAKEAWAY") "TA" else "DL"
-
-            val newRow = VirtualTableEntity(
-                id = UUID.randomUUID().toString(),
-                tableName = "$prefix-$srno",
-                orderType = type,
-                status = TableStatus.AVAILABLE,
-                createdAt = System.currentTimeMillis(),
-                updatedAt = System.currentTimeMillis()
-            )
-
             dao.insert(newRow)
         }
+
+        return newRow   // 🔥 return immediately
     }
 
     fun delete(id: String) {

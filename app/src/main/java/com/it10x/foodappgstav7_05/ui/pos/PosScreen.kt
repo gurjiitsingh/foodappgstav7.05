@@ -258,40 +258,62 @@ fun PosScreen(
                         // -------- ORDER TYPE ICON BUTTONS PHONE--------
 
                         // 🍽️ Dine In (Table)
-                        if (orderType == "DINE_IN" && tableName != null) {
-                            // ✅ Show table chip instead of icon
-                            OrderChip(
-                                label = tableName!!,
-                                selected = true,
-                                onClick = { showTableSelector = true },
-                                shape = commonShape,
-                                height = commonHeight
-                            )
-                        } else {
-                            // 🍽️ Dine-in icon
-                            IconButton(
-                                onClick = {
-                                    orderType = "DINE_IN"
-                                    showTableSelector = true
-                                },
-                                modifier = Modifier
-                                    .size(commonHeight)
-                                    .background(
-                                        if (orderType == "DINE_IN") MaterialTheme.colorScheme.primary
-                                        else MaterialTheme.colorScheme.surfaceVariant,
-                                        shape = commonShape
-                                    )
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Restaurant,
-                                    contentDescription = "Dine In",
-                                    tint = if (orderType == "DINE_IN")
-                                        MaterialTheme.colorScheme.onPrimary
-                                    else
-                                        MaterialTheme.colorScheme.onSurfaceVariant
+                        IconButton(
+                            onClick = {
+                                orderType = "DINE_IN"
+                                showTableSelector = true
+                            },
+                            modifier = Modifier
+                                .size(commonHeight)
+                                .background(
+                                    if (orderType == "DINE_IN") MaterialTheme.colorScheme.primary
+                                    else MaterialTheme.colorScheme.surfaceVariant,
+                                    shape = commonShape
                                 )
-                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Restaurant,
+                                contentDescription = "Dine In",
+                                tint = if (orderType == "DINE_IN")
+                                    MaterialTheme.colorScheme.onPrimary
+                                else
+                                    MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
+//                        if (orderType == "DINE_IN" && tableName != null) {
+//                            // ✅ Show table chip instead of icon
+//                            OrderChip(
+//                                label = tableName!!,
+//                                selected = true,
+//                                onClick = { showTableSelector = true },
+//                                shape = commonShape,
+//                                height = commonHeight
+//                            )
+//                        } else {
+//                            // 🍽️ Dine-in icon
+//                            IconButton(
+//                                onClick = {
+//                                    orderType = "DINE_IN"
+//                                    showTableSelector = true
+//                                },
+//                                modifier = Modifier
+//                                    .size(commonHeight)
+//                                    .background(
+//                                        if (orderType == "DINE_IN") MaterialTheme.colorScheme.primary
+//                                        else MaterialTheme.colorScheme.surfaceVariant,
+//                                        shape = commonShape
+//                                    )
+//                            ) {
+//                                Icon(
+//                                    imageVector = Icons.Default.Restaurant,
+//                                    contentDescription = "Dine In",
+//                                    tint = if (orderType == "DINE_IN")
+//                                        MaterialTheme.colorScheme.onPrimary
+//                                    else
+//                                        MaterialTheme.colorScheme.onSurfaceVariant
+//                                )
+//                            }
+//                        }
 
                         // 🛍️ Takeaway icon
                         IconButton(
@@ -443,40 +465,62 @@ fun PosScreen(
                         // -------- ORDER TYPE ICON BUTTONS TABLET--------
 
                         // 🍽️ Dine In (Table)
-                        if (orderType == "DINE_IN" && tableName != null) {
-                            // ✅ Show table chip instead of icon
-                            OrderChip(
-                                label = tableName!!,
-                                selected = true,
-                                onClick = { showTableSelector = true },
-                                shape = commonShape,
-                                height = commonHeight
-                            )
-                        } else {
-                            // 🍽️ Dine-in icon
-                            IconButton(
-                                onClick = {
-                                    orderType = "DINE_IN"
-                                    showTableSelector = true
-                                },
-                                modifier = Modifier
-                                    .size(commonHeight)
-                                    .background(
-                                        if (orderType == "DINE_IN") MaterialTheme.colorScheme.primary
-                                        else MaterialTheme.colorScheme.surfaceVariant,
-                                        shape = commonShape
-                                    )
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Restaurant,
-                                    contentDescription = "Dine In",
-                                    tint = if (orderType == "DINE_IN")
-                                        MaterialTheme.colorScheme.onPrimary
-                                    else
-                                        MaterialTheme.colorScheme.onSurfaceVariant
+                        IconButton(
+                            onClick = {
+                                orderType = "DINE_IN"
+                                showTableSelector = true
+                            },
+                            modifier = Modifier
+                                .size(commonHeight)
+                                .background(
+                                    if (orderType == "DINE_IN") MaterialTheme.colorScheme.primary
+                                    else MaterialTheme.colorScheme.surfaceVariant,
+                                    shape = commonShape
                                 )
-                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Restaurant,
+                                contentDescription = "Dine In",
+                                tint = if (orderType == "DINE_IN")
+                                    MaterialTheme.colorScheme.onPrimary
+                                else
+                                    MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
+//                        if (orderType == "DINE_IN" && tableName != null) {
+//                            // ✅ Show table chip instead of icon
+//                            OrderChip(
+//                                label = tableName!!,
+//                                selected = true,
+//                                onClick = { showTableSelector = true },
+//                                shape = commonShape,
+//                                height = commonHeight
+//                            )
+//                        } else {
+//                            // 🍽️ Dine-in icon
+//                            IconButton(
+//                                onClick = {
+//                                    orderType = "DINE_IN"
+//                                    showTableSelector = true
+//                                },
+//                                modifier = Modifier
+//                                    .size(commonHeight)
+//                                    .background(
+//                                        if (orderType == "DINE_IN") MaterialTheme.colorScheme.primary
+//                                        else MaterialTheme.colorScheme.surfaceVariant,
+//                                        shape = commonShape
+//                                    )
+//                            ) {
+//                                Icon(
+//                                    imageVector = Icons.Default.Restaurant,
+//                                    contentDescription = "Dine In",
+//                                    tint = if (orderType == "DINE_IN")
+//                                        MaterialTheme.colorScheme.onPrimary
+//                                    else
+//                                        MaterialTheme.colorScheme.onSurfaceVariant
+//                                )
+//                            }
+//                        }
 
                         // 🛍️ Takeaway icon
                         IconButton(
