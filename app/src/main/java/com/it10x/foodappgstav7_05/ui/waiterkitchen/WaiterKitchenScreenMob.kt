@@ -54,6 +54,14 @@ fun WaiterKitchenMobile(
     val subTotal = cartItems.sumOf { it.basePrice * it.quantity }
     val totalTax = cartItems.sumOf { ((it.basePrice * it.taxRate) / 100) * it.quantity }
     val grandTotal = subTotal + totalTax
+    val sendSuccess by waiterkitchenViewModel.sendSuccess.collectAsState()
+
+    LaunchedEffect(sendSuccess) {
+        if (sendSuccess) {
+            onKitchenEmpty()
+            waiterkitchenViewModel.resetSendSuccess()
+        }
+    }
 
     Column(
         modifier = Modifier

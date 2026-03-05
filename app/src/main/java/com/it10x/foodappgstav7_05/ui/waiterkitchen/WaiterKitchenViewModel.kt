@@ -59,6 +59,8 @@ class WaiterKitchenViewModel(
     private val kotItemDao =
         AppDatabaseProvider.get(app).kotItemDao()
 
+    private val _sendSuccess = MutableStateFlow(false)
+    val sendSuccess: StateFlow<Boolean> = _sendSuccess
 
     private val kotToBillUseCase =
         KotToBillUseCase(kotItemDao)
@@ -123,22 +125,23 @@ class WaiterKitchenViewModel(
             _loading.value = true
 
             try {
-                // ✅ 1️⃣ Send to Firestore (fresh list)
-                val success = waiterKitchenRepository.sendOrderToFireStore(
-                    cartList = latestCart,
-                    tableNo = tableNo,
-                    sessionId = sessionId,
-                    orderType = orderType,
-                    deviceId = deviceId,
-                    deviceName = deviceName
-                )
+
+                val success = withContext(Dispatchers.IO) {
+                    waiterKitchenRepository.sendOrderToFireStore(
+                        cartList = latestCart,
+                        tableNo = tableNo,
+                        sessionId = sessionId,
+                        orderType = orderType,
+                        deviceId = deviceId,
+                        deviceName = deviceName
+                    )
+                }
 
                 if (!success) {
                     Log.e("WaiterKitchenVM", "❌ Firestore upload failed")
                     return@launch
                 }
 
-                // ✅ 2️⃣ Save locally (Bill)
                 val billSaved = saveCartItemToBillView(
                     orderType = orderType,
                     sessionId = sessionId,
@@ -154,19 +157,23 @@ class WaiterKitchenViewModel(
                     return@launch
                 }
 
-                // ✅ 3️⃣ Clear Cart (after success)
                 repository.clearCart(orderType, tableNo)
                 cartRepository.syncCartCount(tableNo)
 
-             //   Log.d("WaiterKitchenVM", "✅ Firestore + Bill saved successfully for ${latestCart.size} items")
+                Log.d("WaiterKitchenVM", "✅ Firestore + Bill saved successfully")
+
+                // ✅ MOVE HERE
+                _sendSuccess.value = true
 
             } catch (e: Exception) {
                 Log.e("WaiterKitchenVM", "❌ Error in waiterCartToBill: ${e.message}", e)
-            } finally {
-                _loading.value = false
-                isProcessing = false
             }
         }
+
+
+
+
+
     }
 
 
@@ -385,6 +392,10 @@ class WaiterKitchenViewModel(
                 db.kotItemDao().markPrintedBatch(itemsToPrint.map { it.id })
             }
         }
+    }
+
+    fun resetSendSuccess() {
+        _sendSuccess.value = false
     }
 
 //    fun closeTable(

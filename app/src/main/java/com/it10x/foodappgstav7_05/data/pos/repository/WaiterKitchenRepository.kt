@@ -61,6 +61,7 @@ class WaiterKitchenRepository(
                     price = cartItem.basePrice,
                     taxRate = cartItem.taxRate,
                     tableNo = tableNo,
+                    note = cartItem.note,
                     sessionId = sessionId,
                     kitchenPrintReq = cartItem.kitchenPrintReq,
                     kitchenPrinted = false
