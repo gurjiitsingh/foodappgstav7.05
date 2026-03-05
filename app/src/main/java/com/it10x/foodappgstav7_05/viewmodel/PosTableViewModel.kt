@@ -157,9 +157,33 @@ class PosTableViewModel(app: Application) : AndroidViewModel(app) {
 
 
 
-    // ============================
-    // 🔹 NEW CODE ADDED (SAFE)
-    // ============================
-    // Use ONLY when you need raw counts for a single table
+    fun observeTablesByArea(area: String) {
+        viewModelScope.launch {
+
+            dao.observeTablesByArea(area).collect { tableList ->
+
+                val uiList = tableList.map { table ->
+
+                    val isBilled = table.billCount > 0 || table.kitchenCount > 0
+
+                    val color = when {
+                        table.billCount > 0 -> TableColor.RED
+                        table.kitchenCount > 0 -> TableColor.GREEN
+                        table.cartCount > 0 -> TableColor.BLUE
+                        else -> TableColor.GRAY
+                    }
+
+                    TableUiState(
+                        table = table,
+                        color = color,
+                        isBilled = isBilled
+                    )
+                }
+
+                _tables.emit(uiList)
+            }
+        }
+    }
+
 
 }

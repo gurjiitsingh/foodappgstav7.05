@@ -206,7 +206,11 @@ fun PosScreen(
         showSearchKeyboard = false
     }
 
-
+    LaunchedEffect(orderType) {
+        if (orderType != "DINE_IN") {
+            virtualTableViewModel.setOrderType(orderType)
+        }
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -630,19 +634,29 @@ fun PosScreen(
                     )
                 }
 
+//                LaunchedEffect(orderType) {
+//                    if (orderType == "TAKEAWAY" || orderType == "DELIVERY") {
+//                        virtualTableViewModel.observe(orderType)
+//                    }
+//                }
+
+
+                val virtualTables by virtualTableViewModel.tables.collectAsState()
+
                 LaunchedEffect(orderType) {
                     if (orderType == "TAKEAWAY" || orderType == "DELIVERY") {
-                        virtualTableViewModel.observe(orderType)
+                        virtualTableViewModel.setOrderType(orderType)
                     }
                 }
+
 
                 if (showTableSelector && (orderType == "TAKEAWAY" || orderType == "DELIVERY")) {
 
                     VirtualTableSelectorGrid(
                         tables = virtualTables,
+                        selectedTableId = tableId,
                         onAddNew = {
-                            val nextNumber = System.currentTimeMillis().toInt()
-                            virtualTableViewModel.createNew(orderType, nextNumber)
+                            virtualTableViewModel.createNew(orderType)
                         },
                         onTableSelected = { table ->
                             posSessionViewModel.setTable(
@@ -654,6 +668,7 @@ fun PosScreen(
                         onDismiss = { showTableSelector = false }
                     )
                 }
+
 
 
                 if (showTableSelector && (orderType == "DINE_IN")) {

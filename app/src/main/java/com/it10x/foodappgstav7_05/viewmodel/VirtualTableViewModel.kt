@@ -9,23 +9,26 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.UUID
 
+
+
 class VirtualTableViewModel(app: Application) : AndroidViewModel(app) {
 
-    private val dao = AppDatabaseProvider.get(app).virtualTableDao()
+    private val db = AppDatabaseProvider.get(app)
 
-    // 🔥 Current selected order type
+    private val dao = db.virtualTableDao()
+    private val cartDao = db.cartDao()
+    private val kotDao = db.kotItemDao()
+
+    // 🔹 Current order type (TAKEAWAY / DELIVERY)
     private val selectedType = MutableStateFlow<String?>(null)
 
-    private val cartDao = AppDatabaseProvider.get(app).cartDao()
-    private val kotDao = AppDatabaseProvider.get(app).kotItemDao()
-
-
-    // 🔥 Automatically reacts when type changes
+    // 🔹 Observe tables for selected type
     val tables: StateFlow<List<VirtualTableEntity>> =
         selectedType
             .filterNotNull()
             .flatMapLatest { type ->
                 dao.observeByType(type)
+                    .onStart { emit(emptyList()) }   // ⭐ clear previous list immediately
             }
             .stateIn(
                 scope = viewModelScope,
@@ -33,18 +36,20 @@ class VirtualTableViewModel(app: Application) : AndroidViewModel(app) {
                 initialValue = emptyList()
             )
 
-    // 🔥 Just set type, no manual collecting
-    fun observe(type: String) {
+
+    // 🔹 Change order type
+    fun setOrderType(type: String) {
         selectedType.value = type
     }
 
-    fun createNew(type: String, srno: Int): VirtualTableEntity {
+    // 🔹 Create new virtual table
+    fun createNew(type: String): VirtualTableEntity {
 
         val prefix = if (type == "TAKEAWAY") "TA" else "DL"
 
-        val newRow = VirtualTableEntity(
+        val newTable = VirtualTableEntity(
             id = UUID.randomUUID().toString(),
-            tableName = "$prefix-$srno",
+            tableName = "", // will set after number calculation
             orderType = type,
             status = TableStatus.AVAILABLE,
             createdAt = System.currentTimeMillis(),
@@ -52,53 +57,29 @@ class VirtualTableViewModel(app: Application) : AndroidViewModel(app) {
         )
 
         viewModelScope.launch {
-            dao.insert(newRow)
+
+            // 🔹 get existing tables of this type
+            val existing = dao.getByType(type)
+
+            // 🔹 next number
+            val nextNumber = existing.size + 1
+
+            val updatedTable = newTable.copy(
+                tableName = "$prefix$nextNumber"
+            )
+
+            dao.insert(updatedTable)
         }
 
-        return newRow   // 🔥 return immediately
+        return newTable
     }
 
+
+
+    // 🔹 Delete table
     fun delete(id: String) {
         viewModelScope.launch {
             dao.deleteById(id)
-        }
-    }
-
-
-    fun syncCartCount(tableId: String) {
-        viewModelScope.launch {
-            val count = cartDao.getCartCountForTable(tableId) ?: 0
-            dao.setCartCount(
-                tableId = tableId,
-                count = count,
-                time = System.currentTimeMillis()
-            )
-        }
-    }
-
-    fun syncBillData(tableId: String) {
-        viewModelScope.launch {
-
-            val billCount = kotDao.getBillQtyCount(tableId) ?: 0
-            val billAmount = kotDao.sumDoneAmount(tableId) ?: 0.0
-
-            dao.setBillData(
-                tableId = tableId,
-                count = billCount,
-                amount = billAmount,
-                time = System.currentTimeMillis()
-            )
-        }
-    }
-
-    fun syncKitchenCount(tableId: String) {
-        viewModelScope.launch {
-            val count = kotDao.getKitchenCountForTable(tableId) ?: 0
-            dao.setKitchenCount(
-                tableId = tableId,
-                count = count,
-                time = System.currentTimeMillis()
-            )
         }
     }
 }

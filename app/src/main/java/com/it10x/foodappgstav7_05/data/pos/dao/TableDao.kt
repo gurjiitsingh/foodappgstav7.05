@@ -95,7 +95,12 @@ WHERE id = :tableNo
     suspend fun updateBill(tableNo: String, count: Int, amount: Double)
 
 
-
+    @Query("""
+SELECT * FROM tables 
+WHERE area = :area
+ORDER BY sortOrder
+""")
+    fun observeTablesByArea(area: String): Flow<List<TableEntity>>
 
 
 }

@@ -33,6 +33,7 @@ import com.it10x.foodappgstav7_05.data.pos.entities.VirtualTableEntity
 @Composable
 fun VirtualTableSelectorGrid(
     tables: List<VirtualTableEntity>,
+    selectedTableId: String?,
     onAddNew: () -> VirtualTableEntity,
     onTableSelected: (VirtualTableEntity) -> Unit,
     onDismiss: () -> Unit
@@ -62,30 +63,14 @@ fun VirtualTableSelectorGrid(
                     }
                 }
 
+
                 LazyVerticalGrid(
                     columns = GridCells.Adaptive(minSize = 100.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
 
-                    // 🔥 PLUS BUTTON
-//                    item {
-//                        Surface(
-//                            modifier = Modifier
-//                                .aspectRatio(1f)
-//                                .clickable {
-//                                    val newTable = onAddNew()
-//                                    onTableSelected(newTable)
-//                                    onDismiss()
-//                                },
-//                            shape = RoundedCornerShape(12.dp),
-//                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
-//                        ) {
-//                            Box(contentAlignment = Alignment.Center) {
-//                                Text("+", style = MaterialTheme.typography.headlineLarge)
-//                            }
-//                        }
-//                    }
+
 
                     item {
                         Surface(
@@ -108,12 +93,31 @@ fun VirtualTableSelectorGrid(
                     // 🔥 VIRTUAL TABLES
                     items(tables) { table ->
 
+                        val isSelected = table.id == selectedTableId
+
+                        val bgColor =
+                            if (table.orderType == "TAKEAWAY")
+                                Color(0xFF81C784)   // darker green
+                            else
+                                Color(0xFFFFD54F)   // darker yellow
+
+                        val borderColor =
+                            if (isSelected)
+                                MaterialTheme.colorScheme.primary
+                            else
+                                Color.Transparent
+
                         Surface(
                             modifier = Modifier
                                 .aspectRatio(1f)
                                 .clickable { onTableSelected(table) },
                             shape = RoundedCornerShape(12.dp),
-                            tonalElevation = 2.dp
+                            color = bgColor,
+                            border = BorderStroke(
+                                width = if (isSelected) 3.dp else 1.dp,
+                                color = borderColor
+                            ),
+                            tonalElevation = if (isSelected) 6.dp else 2.dp
                         ) {
                             Column(
                                 modifier = Modifier
@@ -121,22 +125,29 @@ fun VirtualTableSelectorGrid(
                                     .padding(8.dp),
                                 verticalArrangement = Arrangement.SpaceBetween
                             ) {
+
                                 Text(
                                     text = table.tableName,
-                                    style = MaterialTheme.typography.titleMedium
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.Black
                                 )
 
                                 Column {
+
                                     if (table.cartCount > 0) {
-                                        Text("🛒 ${table.cartCount}")
+                                        Text("🛒 ${table.cartCount}", color = Color.Black)
                                     }
+
                                     if (table.billCount > 0) {
-                                        Text("🧾 ${table.billCount}")
+                                        Text("🧾 ${table.billCount}", color = Color.Black)
                                     }
+
                                 }
                             }
                         }
                     }
+
                 }
             }
         }
