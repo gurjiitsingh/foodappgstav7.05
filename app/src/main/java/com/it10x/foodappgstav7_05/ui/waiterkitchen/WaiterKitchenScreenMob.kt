@@ -22,7 +22,7 @@ import com.it10x.foodappgstav7_05.ui.pos.SummaryRow
 import com.it10x.foodappgstav7_05.utils.isInternetAvailable
 import android.widget.Toast
 @Composable
-fun WaiterKitchenMobile(
+fun WaiterKitchenScreenMob(
     sessionId: String,
     tableNo: String,
     tableName: String,
@@ -37,8 +37,24 @@ fun WaiterKitchenMobile(
         mutableStateOf(isInternetAvailable(context))
     }
 
-    LaunchedEffect(cartItems) {
-        if (cartItems.isEmpty()) onKitchenEmpty()
+
+    val loading by waiterkitchenViewModel.loading.collectAsState()
+    val subTotal = cartItems.sumOf { it.basePrice * it.quantity }
+    val totalTax = cartItems.sumOf { ((it.basePrice * it.taxRate) / 100) * it.quantity }
+    val grandTotal = subTotal + totalTax
+    val sendSuccess by waiterkitchenViewModel.sendSuccess.collectAsState()
+
+
+
+//        LaunchedEffect(cartItems) {
+//        if (cartItems.isEmpty()) onKitchenEmpty()
+//    }
+
+    LaunchedEffect(sendSuccess) {
+        if (sendSuccess) {
+            onKitchenEmpty()
+            waiterkitchenViewModel.resetSendSuccess()
+        }
     }
 
     if (cartItems.isEmpty()) {
@@ -49,18 +65,6 @@ fun WaiterKitchenMobile(
             Text("No items in cart.", fontSize = 16.sp)
         }
         return
-    }
-    val loading by waiterkitchenViewModel.loading.collectAsState()
-    val subTotal = cartItems.sumOf { it.basePrice * it.quantity }
-    val totalTax = cartItems.sumOf { ((it.basePrice * it.taxRate) / 100) * it.quantity }
-    val grandTotal = subTotal + totalTax
-    val sendSuccess by waiterkitchenViewModel.sendSuccess.collectAsState()
-
-    LaunchedEffect(sendSuccess) {
-        if (sendSuccess) {
-            onKitchenEmpty()
-            waiterkitchenViewModel.resetSendSuccess()
-        }
     }
 
     Column(

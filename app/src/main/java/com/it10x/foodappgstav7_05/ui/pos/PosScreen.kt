@@ -192,19 +192,8 @@ fun PosScreen(
     var showBill by remember { mutableStateOf(false) }
     var showCategorySelector by remember { mutableStateOf(false) }
 
-    val parentProducts = filteredProducts.filter { it.parentId == null }
 
-    val variants = filteredProducts
-        .filter { it.parentId != null }
-        .groupBy { it.parentId!! }
 
-//    LaunchedEffect(orderType, tableId) {
-//        if (orderType == "DINE_IN" && !tableId.isNullOrBlank()) {
-//            cartViewModel.initSession("DINE_IN", tableId)
-//        } else {
-//            cartViewModel.initSession(orderType)
-//        }
-//    }
     LaunchedEffect(orderType, tableId) {
         if (!tableId.isNullOrBlank()) {
             cartViewModel.initSession(orderType, tableId)
@@ -487,40 +476,7 @@ fun PosScreen(
                                     MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
-//                        if (orderType == "DINE_IN" && tableName != null) {
-//                            // ✅ Show table chip instead of icon
-//                            OrderChip(
-//                                label = tableName!!,
-//                                selected = true,
-//                                onClick = { showTableSelector = true },
-//                                shape = commonShape,
-//                                height = commonHeight
-//                            )
-//                        } else {
-//                            // 🍽️ Dine-in icon
-//                            IconButton(
-//                                onClick = {
-//                                    orderType = "DINE_IN"
-//                                    showTableSelector = true
-//                                },
-//                                modifier = Modifier
-//                                    .size(commonHeight)
-//                                    .background(
-//                                        if (orderType == "DINE_IN") MaterialTheme.colorScheme.primary
-//                                        else MaterialTheme.colorScheme.surfaceVariant,
-//                                        shape = commonShape
-//                                    )
-//                            ) {
-//                                Icon(
-//                                    imageVector = Icons.Default.Restaurant,
-//                                    contentDescription = "Dine In",
-//                                    tint = if (orderType == "DINE_IN")
-//                                        MaterialTheme.colorScheme.onPrimary
-//                                    else
-//                                        MaterialTheme.colorScheme.onSurfaceVariant
-//                                )
-//                            }
-//                        }
+
 
                         // 🛍️ Takeaway icon
                         IconButton(

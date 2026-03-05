@@ -166,7 +166,12 @@ class WaiterKitchenViewModel(
                 _sendSuccess.value = true
 
             } catch (e: Exception) {
-                Log.e("WaiterKitchenVM", "❌ Error in waiterCartToBill: ${e.message}", e)
+                Log.e("WaiterKitchenVM", "❌ Error in waiterCartToBill", e)
+            } finally {
+
+                // ⭐ VERY IMPORTANT
+                _loading.value = false
+                isProcessing = false
             }
         }
 

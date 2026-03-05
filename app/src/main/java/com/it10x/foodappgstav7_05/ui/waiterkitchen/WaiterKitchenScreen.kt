@@ -21,27 +21,38 @@ fun WaiterKitchenScreen(
     // ✅ Simple device detection
     val isPhone = configuration.smallestScreenWidthDp < 600
 
-    if (isPhone) {
-        // 📱 Phone layout
-        WaiterKitchenMobile(
-            sessionId = sessionId,
-            tableNo = tableNo,
-            tableName = tableName,
-            orderType = orderType,
-            waiterkitchenViewModel = waiterkitchenViewModel,
-            cartViewModel = cartViewModel,
-            onKitchenEmpty = onKitchenEmpty
-        )
-    } else {
-        // 📟 Tablet layout
-        WaiterKitchenScreenTab(
-            sessionId = sessionId,
-            tableNo = tableNo,
-            tableName = tableName,
-            orderType = orderType,
-            waiterkitchenViewModel = waiterkitchenViewModel,
-            cartViewModel = cartViewModel,
-            onKitchenEmpty = onKitchenEmpty
-        )
-    }
+
+    WaiterKitchenScreenMob(
+        sessionId = sessionId,
+        tableNo = tableNo,
+        tableName = tableName,
+        orderType = orderType,
+        waiterkitchenViewModel = waiterkitchenViewModel,
+        cartViewModel = cartViewModel,
+        onKitchenEmpty = onKitchenEmpty
+    )
+
+//    if (isPhone) {
+//        // 📱 Phone layout
+//        WaiterKitchenScreenMob(
+//            sessionId = sessionId,
+//            tableNo = tableNo,
+//            tableName = tableName,
+//            orderType = orderType,
+//            waiterkitchenViewModel = waiterkitchenViewModel,
+//            cartViewModel = cartViewModel,
+//            onKitchenEmpty = onKitchenEmpty
+//        )
+//    } else {
+//        // 📟 Tablet layout
+//        WaiterKitchenScreenTab(
+//            sessionId = sessionId,
+//            tableNo = tableNo,
+//            tableName = tableName,
+//            orderType = orderType,
+//            waiterkitchenViewModel = waiterkitchenViewModel,
+//            cartViewModel = cartViewModel,
+//            onKitchenEmpty = onKitchenEmpty
+//        )
+//    }
 }
