@@ -57,6 +57,7 @@ fun TableSelectorGrid(
                 .fillMaxSize()
                 .padding(8.dp),
             shape = RoundedCornerShape(16.dp),
+            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f),
             tonalElevation = 8.dp,
             shadowElevation = 8.dp
         )
@@ -135,7 +136,7 @@ fun TableSelectorGrid(
                             }
 
                             Surface(
-                                color = bgColor,
+                                color = bgColor.copy(alpha = 0.85f),
                                 shape = MaterialTheme.shapes.medium,
                                 tonalElevation = 1.dp,
                                 border = if (isSelected)

@@ -46,7 +46,8 @@ fun VirtualTableSelectorGrid(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(8.dp),
-            shape = RoundedCornerShape(16.dp)
+            shape = RoundedCornerShape(16.dp),
+            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f)
         ) {
             Column(
                 modifier = Modifier
@@ -133,17 +134,30 @@ fun VirtualTableSelectorGrid(
                                     color = Color.Black
                                 )
 
-                                Column {
+                                Column(
+                                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
 
-                                    if (table.cartCount > 0) {
-                                        Text("🛒 ${table.cartCount}", color = Color.Black)
-                                    }
+                                    StatusBadge(
+                                        icon = "🛒",
+                                        text = table.cartCount.toString(),
+                                        bgColor = Color(0xFF1976D2).copy(alpha = 0.55f),
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .alpha(if (table.cartCount > 0) 1f else 0f)
+                                    )
 
-                                    if (table.billCount > 0) {
-                                        Text("🧾 ${table.billCount}", color = Color.Black)
-                                    }
-
+                                    StatusBadge(
+                                        icon = "🧾",
+                                        text = table.billCount.toString(),
+                                        bgColor = Color(0xFF2E7D32).copy(alpha = 0.55f),
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .alpha(if (table.billCount > 0) 1f else 0f)
+                                    )
                                 }
+
                             }
                         }
                     }

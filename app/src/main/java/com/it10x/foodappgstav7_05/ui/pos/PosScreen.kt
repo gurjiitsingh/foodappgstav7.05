@@ -36,6 +36,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.DeliveryDining
 import androidx.compose.material.icons.filled.LocalShipping
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Restaurant
@@ -54,6 +55,7 @@ import com.it10x.foodappgstav7_05.ui.cart.CartUiEvent
 import com.it10x.foodappgstav7_05.ui.kitchen.KitchenViewModelFactory
 
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.text.font.FontWeight
 import com.it10x.foodappgstav7_05.data.pos.viewmodel.ProductsLocalViewModel
 import com.it10x.foodappgstav7_05.data.pos.viewmodel.ProductsLocalViewModelFactory
 import com.it10x.foodappgstav7_05.ui.components.PosTouchKeyboard
@@ -349,7 +351,8 @@ fun PosScreen(
                                 )
                         ) {
                             Icon(
-                                imageVector = Icons.Default.LocalShipping, // 🚚
+                               imageVector = Icons.Default.LocalShipping, // 🚚
+                               // imageVector = Icons.Default.DeliveryDining,
                                 contentDescription = "Delivery",
                                 tint = if (orderType == "DELIVERY")
                                     MaterialTheme.colorScheme.onPrimary
@@ -524,6 +527,7 @@ fun PosScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.LocalShipping, // 🚚
+                                //imageVector = Icons.Default.DeliveryDining,
                                 contentDescription = "Delivery",
                                 tint = if (orderType == "DELIVERY")
                                     MaterialTheme.colorScheme.onPrimary
@@ -601,6 +605,27 @@ fun PosScreen(
                                     imageVector = Icons.Default.MoreVert,
                                     contentDescription = "More Options",
                                     tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+
+                            // -------- CURRENT ORDER CHIP --------
+                            Spacer(Modifier.width(4.dp))
+
+                            OutlinedButton(
+                                onClick = { showTableSelector = true },
+                                shape = commonShape,
+                                modifier = Modifier.height(commonHeight),
+                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
+                                border = BorderStroke(
+                                    1.dp,
+                                    MaterialTheme.colorScheme.primary
+                                )
+                            ) {
+                                Text(
+                                    text = tableName ?: "",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontWeight = FontWeight.SemiBold
                                 )
                             }
                         }
