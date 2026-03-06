@@ -33,8 +33,7 @@ class POSOrdersViewModel(
     private val printerManager: PrinterManager
 ) : ViewModel() {
 
-    val orders: StateFlow<List<PosOrderMasterEntity>> get() = _orders
-    private val _orders = MutableStateFlow<List<PosOrderMasterEntity>>(emptyList())
+
 
     val loading: StateFlow<Boolean> get() = _loading
     private val _loading = MutableStateFlow(false)
@@ -42,6 +41,24 @@ class POSOrdersViewModel(
     val pageIndex = MutableStateFlow(0)
     private val limit = 10
     private val srNoCounter = AtomicInteger(1)
+
+
+    private val _orders = MutableStateFlow<List<PosOrderMasterEntity>>(emptyList())
+    val orders: StateFlow<List<PosOrderMasterEntity>> = _orders
+
+    fun searchOrdersByDate(dateMillis: Long) {
+
+        val startOfDay = dateMillis
+        val endOfDay = startOfDay + 86400000
+
+        viewModelScope.launch {
+
+            repository.getOrdersByDate(startOfDay, endOfDay)
+                .collect { list ->
+                    _orders.value = list
+                }
+        }
+    }
 
     // 🔹 NEW: API-24 safe business date (yyyyMMdd)
     private fun businessDate(): String {
@@ -189,6 +206,9 @@ if(role == "bill") {
                 _loading.value = false
             }
         }
+
+
+
     }
 
 

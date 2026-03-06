@@ -56,9 +56,21 @@ fun CustomerAddressScreen(
     // keyboard control
     var activeField by remember { mutableStateOf<String?>(null) }
     var showKeyboard by remember { mutableStateOf(false) }
-
+    var phoneResults by remember { mutableStateOf<List<PosCustomerEntity>>(emptyList()) }
     // 🔹 Load customer if exists
     LaunchedEffect(phoneInput) {
+
+        if (phoneInput.length >= 3) {
+
+            repository
+                .searchByPhoneFlow(phoneInput)
+                .collect { list ->
+                    phoneResults = list
+                }
+
+        } else {
+            phoneResults = emptyList()
+        }
 
         if (phoneInput.isNotBlank()) {
 
@@ -184,6 +196,63 @@ fun CustomerAddressScreen(
                             enabled = false,
                             modifier = Modifier.fillMaxWidth()
                         )
+                        if (phoneResults.isNotEmpty()) {
+
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 8.dp)
+                            ) {
+
+                                Column {
+
+                                    phoneResults.forEach { customer ->
+
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clickable {
+
+                                                    phoneInput = customer.phone
+
+                                                    name = customer.name ?: ""
+                                                    email = customer.email ?: ""
+
+                                                    address1 = customer.addressLine1 ?: ""
+                                                    address2 = customer.addressLine2 ?: ""
+
+                                                    city = customer.city ?: ""
+                                                    state = customer.state ?: ""
+                                                    zipcode = customer.zipcode ?: ""
+                                                    landmark = customer.landmark ?: ""
+
+                                                    existingCustomer = customer
+                                                    phoneResults = emptyList()
+                                                }
+                                                .padding(12.dp)
+                                        ) {
+
+                                            Column {
+
+                                                Text(
+                                                    text = customer.phone,
+                                                    style = MaterialTheme.typography.bodyLarge
+                                                )
+
+                                                if (!customer.name.isNullOrBlank()) {
+                                                    Text(
+                                                        text = customer.name!!,
+                                                        style = MaterialTheme.typography.bodySmall
+                                                    )
+                                                }
+                                            }
+                                        }
+
+                                        Divider()
+                                    }
+                                }
+                            }
+                        }
                     }
 
                     // NAME

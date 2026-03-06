@@ -137,5 +137,8 @@ class POSOrdersRepository(
         orderMasterDao.updateGrandTotal(orderId, newTotal)
     }
 
+    fun getOrdersByDate(start: Long, end: Long): Flow<List<PosOrderMasterEntity>> {
+        return orderMasterDao.getOrdersBetween(start, end)
+    }
 
 }

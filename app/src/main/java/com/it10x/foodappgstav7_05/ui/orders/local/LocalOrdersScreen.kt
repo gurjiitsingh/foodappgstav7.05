@@ -19,7 +19,7 @@ import com.it10x.foodappgstav7_05.data.pos.entities.PosOrderMasterEntity
 import com.it10x.foodappgstav7_05.data.pos.viewmodel.POSOrdersViewModel
 import java.text.SimpleDateFormat
 import java.util.*
-
+@ExperimentalMaterial3Api
 @Composable
 fun LocalOrdersScreen(
     viewModel: POSOrdersViewModel,
@@ -27,7 +27,12 @@ fun LocalOrdersScreen(
 ) {
     val orders by viewModel.orders.collectAsState()
     val loading by viewModel.loading.collectAsState()
+    var selectedDate by remember { mutableStateOf<Long?>(null) }
+    var showDatePicker by remember { mutableStateOf(false) }
 
+    val dateFormatter = remember {
+        SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
+    }
     LaunchedEffect(Unit) {
         viewModel.loadFirstPage()
     }
@@ -37,6 +42,43 @@ fun LocalOrdersScreen(
             .fillMaxSize()
             .padding(12.dp)
     ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 10.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+
+            OutlinedButton(
+                onClick = { showDatePicker = true }
+            ) {
+                Text(
+                    selectedDate?.let { dateFormatter.format(Date(it)) }
+                        ?: "Select Date"
+                )
+            }
+
+            Button(
+                enabled = selectedDate != null,
+                onClick = {
+                    selectedDate?.let {
+                        viewModel.searchOrdersByDate(it)
+                    }
+                }
+            ) {
+                Text("Search")
+            }
+
+            OutlinedButton(
+                onClick = {
+                    selectedDate = null
+                    viewModel.loadFirstPage()
+                }
+            ) {
+                Text("Reset")
+            }
+        }
 
 
         when {
@@ -100,6 +142,31 @@ fun LocalOrdersScreen(
                 }
 
             }
+        }
+    }
+
+
+    if (showDatePicker) {
+
+        val datePickerState = rememberDatePickerState()
+
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        selectedDate = datePickerState.selectedDateMillis
+                        showDatePicker = false
+                    }
+                ) { Text("OK") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("Cancel")
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
         }
     }
 }

@@ -9,8 +9,7 @@ import kotlinx.coroutines.flow.Flow
 interface OrderMasterDao {
 
 
-    @Query("SELECT * FROM pos_order_master ORDER BY createdAt DESC")
-    fun getAll(): Flow<List<PosOrderMasterEntity>>
+
 
     @Query("SELECT * FROM pos_order_master WHERE id = :orderId LIMIT 1")
     suspend fun getOrderById(orderId: String): PosOrderMasterEntity?
@@ -155,6 +154,16 @@ WHERE id = :orderId
         customerId: String
     ): List<PosOrderMasterEntity>
 
+
+
+
+
+
+    @Query("SELECT * FROM pos_order_master ORDER BY createdAt DESC")
+    fun getAll(): Flow<List<PosOrderMasterEntity>>
+
+    @Query("SELECT * FROM pos_order_master WHERE createdAt BETWEEN :start AND :end ORDER BY createdAt DESC")
+    fun getOrdersBetween(start: Long, end: Long): Flow<List<PosOrderMasterEntity>>
 
 }
 

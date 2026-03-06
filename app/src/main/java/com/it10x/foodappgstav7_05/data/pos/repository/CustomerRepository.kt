@@ -68,5 +68,8 @@ class CustomerRepository(
         return customerDao.getCustomerByPhone(phone)
     }
 
+    fun searchByPhoneFlow(query: String) =
+        customerDao.searchCustomersByPhone(query)
+
 
 }
