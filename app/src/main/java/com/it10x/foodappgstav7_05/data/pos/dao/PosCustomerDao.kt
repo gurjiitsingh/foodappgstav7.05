@@ -79,4 +79,6 @@ interface PosCustomerDao {
 """)
     fun searchCustomersByPhone(query: String): Flow<List<PosCustomerEntity>>
 
+
+
 }

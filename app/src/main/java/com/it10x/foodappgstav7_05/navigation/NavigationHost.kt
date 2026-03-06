@@ -64,6 +64,7 @@ import com.it10x.foodappgstav7_05.ui.delivery.DeliverySettlementScreen
 import com.it10x.foodappgstav7_05.ui.delivery.DeliverySettlementViewModel
 
 import com.it10x.foodappgstav7_05.ui.pos.PosSessionViewModel
+import com.it10x.foodappgstav7_05.ui.pos.customer.CustomerAddressScreen
 
 import com.it10x.foodappgstav7_05.ui.sales.SalesScreen
 import com.it10x.foodappgstav7_05.ui.sales.SalesViewModel
@@ -537,6 +538,33 @@ fun NavigationHost(
                 onBack = { navController.popBackStack() }
             )
         }
+
+
+        composable("Address") { backStackEntry ->
+
+            val context = LocalContext.current
+            val db = AppDatabaseProvider.get(context)
+
+            val phone = backStackEntry.arguments?.getString("phone") ?: ""
+
+            val repository = CustomerRepository(
+                db.posCustomerDao()
+            )
+
+            CustomerAddressScreen(
+                phone = phone,
+                repository = repository,
+                ownerId = "OWNER_ID",     // replace with your real ownerId
+                outletId = "OUTLET_ID",   // replace with your real outletId
+                onSaved = {
+                    navController.popBackStack()
+                },
+                onBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
 
 
     }

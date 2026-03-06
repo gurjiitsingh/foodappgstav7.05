@@ -59,34 +59,12 @@ fun AdvancedSettingsScreen() {
 
         Divider()
 
-        Button(
-            modifier = Modifier.fillMaxWidth(),
-            onClick = { kitchenVm.logAllKotItemsOnce() }
-        ) {
-            Text("Log All KOT Items")
-        }
+
 
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text(
-            text = "Kitchen Data",
-            style = MaterialTheme.typography.titleMedium
-        )
 
-        Button(
-            modifier = Modifier.fillMaxWidth(),
-            onClick = { kitchenVm.logAllKotItemsOnce() }
-        ) {
-            Text("Log All KOT Items")
-        }
-
-        Button(
-            modifier = Modifier.fillMaxWidth(),
-            onClick = { kitchenVm.deleteAllKotItems() }
-        ) {
-            Text("Delete All KOT Items")
-        }
 
 
         // 🔐 Show admin options only after password check
@@ -148,6 +126,23 @@ fun AdvancedSettingsScreen() {
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Reset Client Setup")
+            }
+
+
+
+
+            Button(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = { kitchenVm.logAllKotItemsOnce() }
+            ) {
+                Text("Log All KOT Items")
+            }
+
+            Button(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = { kitchenVm.deleteAllKotItems() }
+            ) {
+                Text("Delete All KOT Items")
             }
         }
     }

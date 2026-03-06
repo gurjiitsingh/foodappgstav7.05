@@ -438,7 +438,20 @@ class MainActivity : ComponentActivity() {
                                             navController.navigate("delivery_settlement") }
                                     )
 
+                                    Divider(
+                                        modifier = Modifier
+                                            .padding(horizontal = 16.dp)
+                                            .padding(bottom = 4.dp),
+                                        thickness = 0.5.dp
+                                    )
 
+                                    NavigationDrawerItem(
+                                        label = { Text("Address") },
+                                        selected = false,
+                                        onClick = {
+                                            scope.launch { drawerState.close() }
+                                            navController.navigate("Address") }
+                                    )
 
                                     // ===============================
                                     // SYNC & DATA

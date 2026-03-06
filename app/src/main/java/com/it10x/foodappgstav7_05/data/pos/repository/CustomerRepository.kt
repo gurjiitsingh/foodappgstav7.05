@@ -63,4 +63,10 @@ class CustomerRepository(
     suspend fun markSynced(id: String, time: Long) {
         customerDao.markSynced(id, time)
     }
+
+    suspend fun getByPhone(phone: String): PosCustomerEntity? {
+        return customerDao.getCustomerByPhone(phone)
+    }
+
+
 }
