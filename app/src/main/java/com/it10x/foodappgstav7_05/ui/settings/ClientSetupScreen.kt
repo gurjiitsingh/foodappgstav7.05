@@ -12,7 +12,9 @@ import com.it10x.foodappgstav7_05.firebase.ClientIdStore
 
 
 @Composable
-fun ClientSetupScreen() {
+fun ClientSetupScreen(
+    onActivated: () -> Unit
+) {
 
     val context = LocalContext.current
     var clientId by remember { mutableStateOf("") }
@@ -55,10 +57,12 @@ fun ClientSetupScreen() {
             enabled = clientId.isNotBlank(),
             modifier = Modifier.fillMaxWidth(),
             onClick = {
-                ClientIdStore.save(context, clientId.trim())
+              //  ClientIdStore.save(context, clientId.trim())
 
                 // 🔁 Full restart so Firebase re-initializes correctly
-                Process.killProcess(Process.myPid())
+                //Process.killProcess(Process.myPid())
+                ClientIdStore.save(context, clientId.trim())
+                onActivated()
             }
         ) {
             Text("Activate")

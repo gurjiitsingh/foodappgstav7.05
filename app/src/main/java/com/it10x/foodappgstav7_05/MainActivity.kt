@@ -81,19 +81,22 @@ import androidx.compose.ui.Alignment
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
+import com.it10x.foodappgstav7_05.core.FirstSyncManager
 import com.it10x.foodappgstav7_05.core.PosRole
 import com.it10x.foodappgstav7_05.core.PosRoleManager
 import com.it10x.foodappgstav7_05.ui.setting.DeviceRoleSelectionScreen
 import com.it10x.foodappgstav7_05.data.pos.dao.ProcessedCloudOrderDao
 import com.it10x.foodappgstav7_05.firebase.ClientRegistry
 import com.it10x.foodappgstav7_05.core.rememberNetworkStatus
+import com.it10x.foodappgstav7_05.ui.settings.FirstAutoSyncScreen
+
 class MainActivity : ComponentActivity() {
     private lateinit var globalOrderSyncManager: GlobalOrderSyncManager
 
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val role = PosRoleManager.getRole(this)
+       // val role = PosRoleManager.getRole(this)
         val db1 = AppDatabaseProvider.get(this)
         val processedDao = db1.processedCloudOrderDao()
         val kotRepository = KotRepository(
@@ -140,24 +143,73 @@ class MainActivity : ComponentActivity() {
             val themeVM: ThemeViewModel = viewModel()
             val themeModeString by themeVM.themeMode.collectAsState()
             val themeMode = PosThemeMode.valueOf(themeModeString)
-
+            val context = LocalContext.current
+            var role by remember { mutableStateOf(PosRoleManager.getRole(context)) }
             FoodPosTheme(
                 mode = themeMode
             ) {
 
-            val context = LocalContext.current
-            val clientId = remember { ClientIdStore.get(context) }
 
-            if (clientId == null) {
-                FoodPosTheme {
-                    ClientSetupScreen()
+
+                LaunchedEffect(role) {
+                    if (role == null) {
+                        PosRoleManager.saveRole(context, PosRole.MAIN)
+                        role = PosRole.MAIN
+                    }
                 }
-                return@FoodPosTheme
-            }
+           // val clientId = remember { ClientIdStore.get(context) }
+                var clientId by remember { mutableStateOf(ClientIdStore.get(context)) }
+                if (clientId == null) {
+
+                    ClientSetupScreen(
+                        onActivated = {
+                            clientId = ClientIdStore.get(context)
+                        }
+                    )
+
+                    return@FoodPosTheme
+                }
+
+                val config = ClientRegistry.get(clientId!!)
+
+                if (FirebaseApp.getApps(context).none { it.name == FirebaseApp.DEFAULT_APP_NAME }) {
+                    val options = FirebaseOptions.Builder()
+                        .setApiKey(config.apiKey)
+                        .setApplicationId(config.applicationId)
+                        .setProjectId(config.projectId)
+                        .build()
+
+                    FirebaseApp.initializeApp(context, options)
+                }
+
+                val firestore = remember(clientId) {
+                    FirebaseFirestore.getInstance()
+                }
+
+                var firstSyncDone by remember {
+                    mutableStateOf(FirstSyncManager.isFirstSyncDone(context))
+                }
+
+                if (!firstSyncDone) {
+
+                    FirstAutoSyncScreen(
+                        onFinished = {
+                            firstSyncDone = true
+                        }
+                    )
+
+                    return@FoodPosTheme
+                }
+
 
                 // ✅ Initialize Firebase dynamically now
-                val config = ClientRegistry.get(clientId)
-                if (FirebaseApp.getApps(context).isEmpty()) {
+
+
+
+
+
+
+                if (FirebaseApp.getApps(context).none { it.name == FirebaseApp.DEFAULT_APP_NAME }) {
                     val options = FirebaseOptions.Builder()
                         .setApiKey(config.apiKey)
                         .setApplicationId(config.applicationId)
@@ -166,8 +218,7 @@ class MainActivity : ComponentActivity() {
                     FirebaseApp.initializeApp(context, options)
                 }
 
-// ✅ now safe
-                val firestore = remember { FirebaseFirestore.getInstance() }
+
 
                 globalOrderSyncManager = GlobalOrderSyncManager(
                     firestore = firestore,
@@ -181,12 +232,16 @@ class MainActivity : ComponentActivity() {
                         globalOrderSyncManager.startListening()
                     }
                 }
-                val role = PosRoleManager.getRole(context)
 
+
+//                val startDestination = when (role) {
+//                    null -> "device_role_selection"
+//                    PosRole.MAIN -> "tables"
+//                    PosRole.WAITER -> "posWaiter"
+//                }
                 val startDestination = when (role) {
-                    null -> "device_role_selection"
-                    PosRole.MAIN -> "tables"
                     PosRole.WAITER -> "posWaiter"
+                    else -> "tables"
                 }
             // ✅ START SERVICE ONLY NOW
                 if (role == PosRole.MAIN) {
