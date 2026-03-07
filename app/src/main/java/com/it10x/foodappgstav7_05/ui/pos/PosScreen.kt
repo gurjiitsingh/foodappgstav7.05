@@ -110,8 +110,12 @@ fun PosScreen(
         ?.tableName
  var selectedTableName = selectedTableName1 ?: ""
 
-    var selectedTable by remember { mutableStateOf<VirtualTableEntity?>(null) }
-    var showTableSelector by remember { mutableStateOf(false) }
+    var showTableSelector by rememberSaveable() {
+        mutableStateOf(false)
+    }
+
+//    var selectedTable by remember { mutableStateOf<VirtualTableEntity?>(null) }
+//    var showTableSelector by remember { mutableStateOf(false) }
 
 
 
@@ -610,7 +614,7 @@ fun PosScreen(
                                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
-
+                            var showTableSelector by remember { mutableStateOf(false) }
                             // -------- CURRENT ORDER CHIP --------
                             // -------- CURRENT ORDER CHIP --------
                             Spacer(Modifier.width(4.dp))
@@ -626,7 +630,7 @@ fun PosScreen(
                                 )
                             ) {
                                 Text(
-                                    text = selectedTable?.tableName ?: "Select Table",
+                                    text = tableName ?: "",
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.primary,
                                     fontWeight = FontWeight.SemiBold

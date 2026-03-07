@@ -79,8 +79,9 @@ fun VirtualTableSelectorGrid(
                                 .aspectRatio(1f)
                                 .clickable {
                                     val newTable = onAddNew()
-                                    onTableSelected(newTable)
-                                    onDismiss()
+                               //     onTableSelected(newTable)
+                                     //   onTableSelected(newTable)
+                                   // onDismiss()
                                 },
                             shape = RoundedCornerShape(12.dp),
                             color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
