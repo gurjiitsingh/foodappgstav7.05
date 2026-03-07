@@ -1,6 +1,7 @@
 package com.it10x.foodappgstav7_05.ui.settings
 
 import android.app.Application
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -15,17 +16,26 @@ import com.it10x.foodappgstav7_05.viewmodel.OutletSyncViewModel
 import com.it10x.foodappgstav7_05.viewmodel.TableSyncViewModel
 import com.it10x.foodappgstav7_05.viewmodel.OrderSyncViewModel
 import androidx.compose.ui.platform.LocalContext
+import com.google.firebase.FirebaseApp
 import com.it10x.foodappgstav7_05.data.online.sync.CustomerSyncViewModelFactory
 import com.it10x.foodappgstav7_05.data.pos.AppDatabaseProvider
 import com.it10x.foodappgstav7_05.viewmodel.CustomerSyncViewModel
 import com.it10x.foodappgstav7_05.viewmodel.OrderSyncViewModelFactory
 
-
+import com.google.firebase.firestore.FirebaseFirestore
+import com.it10x.foodappgstav7_05.data.PrinterPreferences
+import com.it10x.foodappgstav7_05.data.online.sync.PrinterSyncRepository
+import com.it10x.foodappgstav7_05.data.pos.repository.PrinterRepository
+import com.it10x.foodappgstav7_05.data.printer.PrinterRestoreManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 @Composable
 fun SyncScreen(
     navController: NavController,
     onBack: () -> Unit = {}
 ) {
+
     val productVm: ProductSyncViewModel = viewModel()
     val outletVm: OutletSyncViewModel = viewModel()
     val tableVm: TableSyncViewModel = viewModel()
@@ -55,6 +65,16 @@ fun SyncScreen(
 
     val orderSyncing by orderSyncVm.syncing.collectAsState()
     val orderSyncStatus by orderSyncVm.status.collectAsState()
+
+    val db = remember { AppDatabaseProvider.get(context) }
+
+    val printerRepository = remember {
+        PrinterRepository(db.printerDao())
+    }
+
+    val printerPreferences = remember {
+        PrinterPreferences(context)
+    }
 
     Column(
         modifier = Modifier
@@ -121,6 +141,63 @@ fun SyncScreen(
                 )
 
                 Text(customerStatus)
+
+
+
+                SmallSyncButton(
+                    enabled = !productSyncing && !outletSyncing && !tableSyncing,
+                    text = "Sync Printers",
+                    onClick = {
+
+                        Log.d("PRINTER_SYNC", "Button clicked")
+
+                        if (FirebaseApp.getApps(context).isEmpty()) {
+                            Log.e("PRINTER_SYNC", "Firebase NOT initialized")
+                            return@SmallSyncButton
+                        }
+
+                        Log.d("PRINTER_SYNC", "Firebase initialized")
+
+                        val printerSyncRepository = PrinterSyncRepository(
+                            FirebaseFirestore.getInstance(),
+                            printerRepository
+                        )
+
+                        CoroutineScope(Dispatchers.IO).launch {
+
+                            try {
+
+                                Log.d("PRINTER_SYNC", "Starting download")
+
+                                // 1️⃣ Download printers
+                                printerSyncRepository.downloadPrinters()
+
+                                Log.d("PRINTER_SYNC", "Download finished")
+
+                                // 2️⃣ Load printers from Room
+                                val printers = printerRepository.getAll()
+
+                                Log.d("PRINTER_SYNC", "Printers in DB: ${printers.size}")
+
+                                // 3️⃣ Restore preferences
+                                PrinterRestoreManager.restoreToPreferences(
+                                    printers,
+                                    printerPreferences
+                                )
+
+                                Log.d("PRINTER_SYNC", "Preferences restored")
+
+                            } catch (e: Exception) {
+
+                                Log.e("PRINTER_SYNC", "ERROR: ${e.message}")
+
+                            }
+                        }
+                    }
+                )
+
+
+
             }
         }
 

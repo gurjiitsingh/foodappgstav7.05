@@ -19,7 +19,7 @@ import com.it10x.foodappgstav7_05.data.pos.entities.PosOrderMasterEntity
 import com.it10x.foodappgstav7_05.data.pos.viewmodel.POSOrdersViewModel
 import java.text.SimpleDateFormat
 import java.util.*
-@ExperimentalMaterial3Api
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LocalOrdersScreen(
     viewModel: POSOrdersViewModel,

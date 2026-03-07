@@ -17,7 +17,8 @@ import com.it10x.foodappgstav7_05.data.PrinterPreferences
 import com.it10x.foodappgstav7_05.data.PrinterRole
 import com.it10x.foodappgstav7_05.data.PrinterType
 import com.it10x.foodappgstav7_05.viewmodel.PrinterSettingsViewModel
-
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PrinterSettingsScreen(

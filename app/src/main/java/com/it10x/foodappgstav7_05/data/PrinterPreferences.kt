@@ -4,7 +4,7 @@ import android.content.Context
 import android.hardware.usb.UsbManager
 import com.it10x.foodappgstav7_05.data.PrinterConfig
 import com.it10x.foodappgstav7_05.printer.PaperSize
-
+import com.it10x.foodappgstav7_05.data.pos.entities.PrinterEntity
 
 class PrinterPreferences(
     private val context: Context
@@ -205,6 +205,74 @@ fun getPrinterConfig(role: PrinterRole): PrinterConfig? {
             )
         }
     }
+
+
+    fun buildPrinterEntity(role: PrinterRole): PrinterEntity? {
+
+        val type = getPrinterType(role)
+
+        val printerId = "PRINTER_${role.name}"
+
+        return when (type) {
+
+            PrinterType.BLUETOOTH -> {
+
+                val address = getBluetoothPrinterAddress(role)
+                val name = getBluetoothPrinterName(role)
+
+                if (address.isBlank()) return null
+
+                PrinterEntity(
+                    printerId = printerId,
+                    deviceId = null,
+                    outletId = "default_outlet",
+                    printerName = name,
+                    printerType = role.name,
+                    connectionType = "BLUETOOTH",
+                    macAddress = address
+                )
+            }
+
+            PrinterType.LAN -> {
+
+                val ip = getLanPrinterIP(role)
+
+                if (ip.isBlank()) return null
+
+                PrinterEntity(
+                    printerId = printerId,
+                    deviceId = null,
+                    outletId = "default_outlet",
+                    printerName = "LAN_${role.name}",
+                    printerType = role.name,
+                    connectionType = "LAN",
+                    ipAddress = ip,
+                    port = getLanPrinterPort(role)
+                )
+            }
+
+            PrinterType.USB -> {
+
+                val name = getUSBPrinterName(role)
+                val deviceId = getUSBPrinterId(role)
+
+                if (deviceId == -1) return null
+
+                PrinterEntity(
+                    printerId = printerId,
+                    deviceId = deviceId.toString(),
+                    outletId = "default_outlet",
+                    printerName = name,
+                    printerType = role.name,
+                    connectionType = "USB",
+                    usbDeviceName = name
+                )
+            }
+
+            PrinterType.WIFI -> null
+        }
+    }
+
 
 
 }

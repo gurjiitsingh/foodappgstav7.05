@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -51,6 +52,7 @@ import com.it10x.foodappgstav7_05.data.pos.repository.CustomerLedgerRepository
 import com.it10x.foodappgstav7_05.data.pos.repository.CustomerRepository
 import com.it10x.foodappgstav7_05.data.pos.repository.KotRepository
 import com.it10x.foodappgstav7_05.data.pos.repository.VirtualTableRepository
+import com.it10x.foodappgstav7_05.data.printer.PrinterUploadManager
 import com.it10x.foodappgstav7_05.domain.usecase.TableReleaseUseCase
 import com.it10x.foodappgstav7_05.ui.cart.CartViewModel
 import com.it10x.foodappgstav7_05.ui.cart.CartViewModelFactory
@@ -69,12 +71,15 @@ import com.it10x.foodappgstav7_05.ui.pos.customer.CustomerAddressScreen
 import com.it10x.foodappgstav7_05.ui.sales.SalesScreen
 import com.it10x.foodappgstav7_05.ui.sales.SalesViewModel
 import com.it10x.foodappgstav7_05.ui.sales.SalesViewModelFactory
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 
 @Composable
 fun NavigationHost(
     navController: NavHostController,
     printerManager: PrinterManager,
     printerPreferences: PrinterPreferences,
+    printerUploadManager: PrinterUploadManager,
     realtimeOrdersViewModel: RealtimeOrdersViewModel,
     paddingValues: PaddingValues = PaddingValues(),
     onSavePrinterSettings: () -> Unit = {}
@@ -410,12 +415,19 @@ fun NavigationHost(
                 backStackEntry.arguments!!.getString("role")!!
             )
 
+            val scope = rememberCoroutineScope()
+
             PrinterSettingsScreen(
                 viewModel = printerSettingsViewModel,
                 prefs = printerPreferences,
                 role = role,
                 onSave = {
                     onSavePrinterSettings()
+
+                    scope.launch {
+                        printerUploadManager.uploadPrinter(role)
+                    }
+
                     navController.popBackStack()
                 },
                 onBack = { navController.popBackStack() },

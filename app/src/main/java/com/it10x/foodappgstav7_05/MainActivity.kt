@@ -57,25 +57,21 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.it10x.foodappgstav7_05.data.online.sync.GlobalOrderSyncManager
 import com.it10x.foodappgstav7_05.data.pos.AppDatabaseProvider
 import com.it10x.foodappgstav7_05.data.pos.KotProcessor
-import com.it10x.foodappgstav7_05.ui.bill.BillViewModel
+
 import androidx.activity.viewModels
 import androidx.compose.material.icons.filled.PointOfSale
 import androidx.compose.material.icons.filled.ReceiptLong
-import androidx.compose.material.icons.filled.Restaurant
+
 import androidx.compose.material.icons.filled.TableBar
-import androidx.compose.material.icons.filled.TableRestaurant
-import com.it10x.foodappgstav7_05.data.pos.entities.PosCartEntity
+
 import com.it10x.foodappgstav7_05.data.pos.repository.KotRepository
 import com.it10x.foodappgstav7_05.data.pos.repository.POSOrdersRepository
-import com.it10x.foodappgstav7_05.ui.cart.CartViewModel
-import com.it10x.foodappgstav7_05.ui.cart.CartViewModelFactory
+
 import com.it10x.foodappgstav7_05.ui.kitchen.KitchenViewModel
 import com.it10x.foodappgstav7_05.ui.kitchen.KitchenViewModelFactory
-import androidx.compose.foundation.background
+
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.filled.TableBar
-import androidx.compose.material.icons.filled.PointOfSale
-import androidx.compose.material.icons.filled.ReceiptLong
+
 import androidx.compose.material.icons.filled.VolumeOff
 import androidx.compose.ui.Alignment
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -84,10 +80,11 @@ import com.google.firebase.FirebaseOptions
 import com.it10x.foodappgstav7_05.core.FirstSyncManager
 import com.it10x.foodappgstav7_05.core.PosRole
 import com.it10x.foodappgstav7_05.core.PosRoleManager
-import com.it10x.foodappgstav7_05.ui.setting.DeviceRoleSelectionScreen
-import com.it10x.foodappgstav7_05.data.pos.dao.ProcessedCloudOrderDao
+
 import com.it10x.foodappgstav7_05.firebase.ClientRegistry
 import com.it10x.foodappgstav7_05.core.rememberNetworkStatus
+import com.it10x.foodappgstav7_05.data.pos.repository.PrinterRepository
+import com.it10x.foodappgstav7_05.data.printer.PrinterUploadManager
 import com.it10x.foodappgstav7_05.ui.settings.FirstAutoSyncScreen
 
 class MainActivity : ComponentActivity() {
@@ -97,21 +94,43 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
        // val role = PosRoleManager.getRole(this)
-        val db1 = AppDatabaseProvider.get(this)
-        val processedDao = db1.processedCloudOrderDao()
+        val db = AppDatabaseProvider.get(this)
+
+        //PRINTER SETTING UPLOAD
+        // ================= PRINTER SYSTEM =================
+
+// 1️⃣ Preferences
+        val printerPreferences = PrinterPreferences(this)
+
+// 2️⃣ Repository
+        val printerRepository = PrinterRepository(
+            db.printerDao()
+        )
+
+// 3️⃣ Upload manager
+        val printerUploadManager by lazy {
+            PrinterUploadManager(
+                printerPreferences,
+                printerRepository
+            )
+        }
+
+
+
+        val processedDao = db.processedCloudOrderDao()
         val kotRepository = KotRepository(
-            batchDao = db1.kotBatchDao(),
-            kotItemDao = db1.kotItemDao(),
-            tableDao = db1.tableDao()
+            batchDao = db.kotBatchDao(),
+            kotItemDao = db.kotItemDao(),
+            tableDao = db.tableDao()
         )
         val printerManager = PrinterManager(this)
         val kotProcessor = KotProcessor(
-            kotItemDao = db1.kotItemDao(),
+            kotItemDao = db.kotItemDao(),
             kotRepository = kotRepository,
             printerManager = printerManager
         )
         // 1️⃣ Get database instance
-        val db = AppDatabaseProvider.get(this)
+
 
         val repository = POSOrdersRepository(
             db = db,
@@ -253,8 +272,7 @@ class MainActivity : ComponentActivity() {
 // ------------------------------------
 // CORE SINGLETON OBJECTS (ONCE)
 // ------------------------------------
-            val printerPreferences = remember { PrinterPreferences(this) }
-            val printerManager = remember { PrinterManager(this) }
+
             val ordersRepository = remember { OrdersRepository() }
 
             val ordersViewModel: OnlineOrdersViewModel = viewModel(
@@ -810,6 +828,7 @@ class MainActivity : ComponentActivity() {
                         navController = navController,
                         printerManager = printerManager,
                         printerPreferences = printerPreferences,
+                        printerUploadManager = printerUploadManager,
                         realtimeOrdersViewModel = realtimeOrdersVM,
                         paddingValues = paddingValues,
                         onSavePrinterSettings = { }

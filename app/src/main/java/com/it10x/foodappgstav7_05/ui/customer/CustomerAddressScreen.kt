@@ -11,6 +11,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
+import com.it10x.foodappgstav7_05.com.it10x.foodappgstav7_05.ui.components.KeyboardCompactExt
+import com.it10x.foodappgstav7_05.com.it10x.foodappgstav7_05.ui.components.KeyboardPhoneExt
 import kotlinx.coroutines.launch
 import java.util.UUID
 
@@ -469,7 +471,7 @@ fun CustomerAddressScreen(
 
                 if (!isPhone) {
 
-                    PosTouchKeyboardCompact(
+                    KeyboardCompactExt(
                         onKeyPress = { applyKey(it) },
                         onBackspace = { backspace() },
                         onClear = { },
@@ -479,7 +481,7 @@ fun CustomerAddressScreen(
 
                 } else {
 
-                    TouchKeyboardPhone(
+                    KeyboardPhoneExt(
                         onKeyPress = { applyKey(it) },
                         onBackspace = { backspace() },
                         onClear = {},

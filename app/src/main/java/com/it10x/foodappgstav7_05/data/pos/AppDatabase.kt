@@ -23,8 +23,9 @@ import com.it10x.foodappgstav7_05.data.pos.entities.config.*
         PosCustomerLedgerEntity::class,
         ProcessedCloudOrderEntity::class,
         VirtualTableEntity:: class,
+        PrinterEntity::class
     ],
-    version = 86,              // ⬆️ increment version since schema changed
+    version = 89,              // ⬆️ increment version since schema changed
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -48,4 +49,6 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun posCustomerLedgerDao(): PosCustomerLedgerDao
     abstract fun processedCloudOrderDao(): ProcessedCloudOrderDao
     abstract fun virtualTableDao(): VirtualTableDao
+
+    abstract fun printerDao(): PrinterDao
 }
