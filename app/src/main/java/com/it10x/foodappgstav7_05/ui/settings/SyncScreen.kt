@@ -107,96 +107,108 @@ fun SyncScreen(
                     style = MaterialTheme.typography.titleMedium
                 )
 
-                SmallSyncButton(
-                    enabled = !outletSyncing && !productSyncing,
-                    text = if (outletSyncing) "Syncing Outlet…" else "Sync Outlet Config",
-                    onClick = { outletVm.syncOutlet() }
-                )
-                Text(outletStatus)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    SmallSyncButton(
+                        enabled = !outletSyncing && !productSyncing,
+                        text = if (outletSyncing) "Syncing Outlet…" else "Sync Outlet Config",
+                        onClick = { outletVm.syncOutlet() }
+                    )
+                    Text(outletStatus)
 
-                SmallSyncButton(
-                    enabled = !productSyncing && !outletSyncing,
-                    text = if (productSyncing) "Syncing Menu…" else "Sync Menu Data",
-                    onClick = { productVm.syncAll() }
-                )
-                Text(productStatus)
-
-                SmallSyncButton(
-                    enabled = !productSyncing && !outletSyncing && !tableSyncing,
-                    text = if (tableSyncing) "Syncing Tables…" else "Sync Tables",
-                    onClick = { tableVm.syncTables() }
-                )
-                Text(tableStatus)
-
-
-
-                SmallSyncButton(
-                    enabled = !customerSyncing &&
-                            !orderSyncing &&
-                            !productSyncing &&
-                            !outletSyncing &&
-                            !tableSyncing,
-                    text = if (customerSyncing) "Syncing Customers…" else "Sync Customers",
-                    onClick = { customerSyncVm.syncCustomers() }
-                )
-
-                Text(customerStatus)
+                    SmallSyncButton(
+                        enabled = !productSyncing && !outletSyncing,
+                        text = if (productSyncing) "Syncing Menu…" else "Sync Menu Data",
+                        onClick = { productVm.syncAll() }
+                    )
+                    Text(productStatus)
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    SmallSyncButton(
+                        enabled = !productSyncing && !outletSyncing && !tableSyncing,
+                        text = if (tableSyncing) "Syncing Tables…" else "Sync Tables",
+                        onClick = { tableVm.syncTables() }
+                    )
+                    Text(tableStatus)
 
 
 
-                SmallSyncButton(
-                    enabled = !productSyncing && !outletSyncing && !tableSyncing,
-                    text = "Sync Printers",
-                    onClick = {
+                    SmallSyncButton(
+                        enabled = !customerSyncing &&
+                                !orderSyncing &&
+                                !productSyncing &&
+                                !outletSyncing &&
+                                !tableSyncing,
+                        text = if (customerSyncing) "Syncing Customers…" else "Sync Customers",
+                        onClick = { customerSyncVm.syncCustomers() }
+                    )
 
-                        Log.d("PRINTER_SYNC", "Button clicked")
+                    Text(customerStatus)
 
-                        if (FirebaseApp.getApps(context).isEmpty()) {
-                            Log.e("PRINTER_SYNC", "Firebase NOT initialized")
-                            return@SmallSyncButton
-                        }
+                }
 
-                        Log.d("PRINTER_SYNC", "Firebase initialized")
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    SmallSyncButton(
+                        enabled = !productSyncing && !outletSyncing && !tableSyncing,
+                        text = "Sync Printers",
+                        onClick = {
 
-                        val printerSyncRepository = PrinterSyncRepository(
-                            FirebaseFirestore.getInstance(),
-                            printerRepository
-                        )
+                            Log.d("PRINTER_SYNC", "Button clicked")
 
-                        CoroutineScope(Dispatchers.IO).launch {
+                            if (FirebaseApp.getApps(context).isEmpty()) {
+                                Log.e("PRINTER_SYNC", "Firebase NOT initialized")
+                                return@SmallSyncButton
+                            }
 
-                            try {
+                            Log.d("PRINTER_SYNC", "Firebase initialized")
 
-                                Log.d("PRINTER_SYNC", "Starting download")
+                            val printerSyncRepository = PrinterSyncRepository(
+                                FirebaseFirestore.getInstance(),
+                                printerRepository
+                            )
 
-                                // 1️⃣ Download printers
-                                printerSyncRepository.downloadPrinters()
+                            CoroutineScope(Dispatchers.IO).launch {
 
-                                Log.d("PRINTER_SYNC", "Download finished")
+                                try {
 
-                                // 2️⃣ Load printers from Room
-                                val printers = printerRepository.getAll()
+                                    Log.d("PRINTER_SYNC", "Starting download")
 
-                                Log.d("PRINTER_SYNC", "Printers in DB: ${printers.size}")
+                                    // 1️⃣ Download printers
+                                    printerSyncRepository.downloadPrinters()
 
-                                // 3️⃣ Restore preferences
-                                PrinterRestoreManager.restoreToPreferences(
-                                    printers,
-                                    printerPreferences
-                                )
+                                    Log.d("PRINTER_SYNC", "Download finished")
 
-                                Log.d("PRINTER_SYNC", "Preferences restored")
+                                    // 2️⃣ Load printers from Room
+                                    val printers = printerRepository.getAll()
 
-                            } catch (e: Exception) {
+                                    Log.d("PRINTER_SYNC", "Printers in DB: ${printers.size}")
 
-                                Log.e("PRINTER_SYNC", "ERROR: ${e.message}")
+                                    // 3️⃣ Restore preferences
+                                    PrinterRestoreManager.restoreToPreferences(
+                                        printers,
+                                        printerPreferences
+                                    )
 
+                                    Log.d("PRINTER_SYNC", "Preferences restored")
+
+                                } catch (e: Exception) {
+
+                                    Log.e("PRINTER_SYNC", "ERROR: ${e.message}")
+
+                                }
                             }
                         }
-                    }
-                )
+                    )
 
-
+                }
 
             }
         }
@@ -215,20 +227,41 @@ fun SyncScreen(
             ) {
 
                 Text(
-                    text = "Upload",
+                    text = "Backup",
                     style = MaterialTheme.typography.titleMedium
                 )
 
-                SmallSyncButton(
-                    enabled = !orderSyncing &&
-                            !productSyncing &&
-                            !outletSyncing &&
-                            !tableSyncing,
-                    text = if (orderSyncing) "Syncing Orders…" else "Sync POS Orders",
-                    onClick = { orderSyncVm.syncOrders() }
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    SmallSyncButton(
+                        enabled = !orderSyncing &&
+                                !productSyncing &&
+                                !outletSyncing &&
+                                !tableSyncing,
+                        text = if (orderSyncing) "Syncing Orders…" else "Sync POS Orders",
+                        onClick = {
+                            orderSyncVm.syncOrders()
+                            customerSyncVm.syncCustomers()
+                        }
+                    )
 
-                Text(orderSyncStatus)
+//                    Text(orderSyncStatus)
+
+
+//                    SmallSyncButton(
+//                        enabled = !customerSyncing &&
+//                                !orderSyncing &&
+//                                !productSyncing &&
+//                                !outletSyncing &&
+//                                !tableSyncing,
+//                        text = if (customerSyncing) "Syncing Customers…" else "Sync Customers",
+//                        onClick = { customerSyncVm.syncCustomers() }
+//                    )
+//
+//                    Text(customerStatus)
+                }
             }
         }
 
@@ -247,6 +280,7 @@ fun SyncScreen(
 }
 
 
+
 @Composable
 fun SmallSyncButton(
     enabled: Boolean,
@@ -257,12 +291,13 @@ fun SmallSyncButton(
         onClick = onClick,
         enabled = enabled,
         modifier = Modifier
-            .fillMaxWidth()
-            .height(42.dp),   // smaller height
-        contentPadding = PaddingValues(vertical = 4.dp)
+            .width(200.dp)   // 👈 fixed smaller width
+            .height(42.dp),
+        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
     ) {
         Text(text)
     }
 }
+
 
 

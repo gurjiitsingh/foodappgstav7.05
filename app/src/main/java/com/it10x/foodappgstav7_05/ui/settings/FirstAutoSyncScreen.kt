@@ -8,10 +8,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.google.firebase.firestore.FirebaseFirestore
 import com.it10x.foodappgstav7_05.viewmodel.ProductSyncViewModel
 import com.it10x.foodappgstav7_05.viewmodel.OutletSyncViewModel
 import com.it10x.foodappgstav7_05.viewmodel.TableSyncViewModel
 import com.it10x.foodappgstav7_05.core.FirstSyncManager
+import com.it10x.foodappgstav7_05.data.PrinterPreferences
+import com.it10x.foodappgstav7_05.data.online.sync.PrinterSyncRepository
+import com.it10x.foodappgstav7_05.data.pos.AppDatabaseProvider
+import com.it10x.foodappgstav7_05.data.pos.repository.PrinterRepository
+import com.it10x.foodappgstav7_05.data.printer.PrinterRestoreManager
 import kotlinx.coroutines.flow.dropWhile
 import kotlinx.coroutines.flow.first
 
@@ -28,6 +34,23 @@ fun FirstAutoSyncScreen(
 
     var stage by remember { mutableStateOf(0) }
     var finished by remember { mutableStateOf(false) }
+
+    val db = remember { AppDatabaseProvider.get(context) }
+
+    val printerRepository = remember {
+        PrinterRepository(db.printerDao())
+    }
+
+    val printerPreferences = remember {
+        PrinterPreferences(context)
+    }
+
+    val printerSyncRepository = remember {
+        PrinterSyncRepository(
+            FirebaseFirestore.getInstance(),
+            printerRepository
+        )
+    }
 
     LaunchedEffect(Unit) {
 
@@ -47,7 +70,26 @@ fun FirstAutoSyncScreen(
         kotlinx.coroutines.delay(2500)
 
         // FINISH
+        // PRINTERS
         stage = 4
+
+        try {
+
+            printerSyncRepository.downloadPrinters()
+
+            val printers = printerRepository.getAll()
+
+            PrinterRestoreManager.restoreToPreferences(
+                printers,
+                printerPreferences
+            )
+
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+// FINISH
+        stage = 5
         FirstSyncManager.setFirstSyncDone(context)
 
         finished = true
@@ -71,6 +113,7 @@ fun FirstAutoSyncScreen(
                     1 -> "Downloading 1 ..."
                     2 -> "Downloading 2 ..."
                     3 -> "Downloading 3 ..."
+                    4 -> " ..."
                     else -> "Finishing Setup..."
                 }
             )
