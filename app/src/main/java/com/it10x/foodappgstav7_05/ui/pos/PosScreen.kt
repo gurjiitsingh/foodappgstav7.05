@@ -56,6 +56,7 @@ import com.it10x.foodappgstav7_05.ui.kitchen.KitchenViewModelFactory
 
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.font.FontWeight
+import com.it10x.foodappgstav7_05.data.pos.entities.VirtualTableEntity
 import com.it10x.foodappgstav7_05.data.pos.viewmodel.ProductsLocalViewModel
 import com.it10x.foodappgstav7_05.data.pos.viewmodel.ProductsLocalViewModelFactory
 import com.it10x.foodappgstav7_05.ui.components.PosTouchKeyboard
@@ -79,9 +80,7 @@ fun PosScreen(
     // --- COMMON STYLING ---
     val commonShape = RoundedCornerShape(8.dp)
     val commonHeight = 52.dp
-    var showTableSelector by rememberSaveable() {
-        mutableStateOf(false)
-    }
+
 
 
     var showSearchKeyboard by rememberSaveable {  mutableStateOf(false) }
@@ -110,6 +109,10 @@ fun PosScreen(
         ?.table
         ?.tableName
  var selectedTableName = selectedTableName1 ?: ""
+
+    var selectedTable by remember { mutableStateOf<VirtualTableEntity?>(null) }
+    var showTableSelector by remember { mutableStateOf(false) }
+
 
 
     val productsViewModel: ProductsLocalViewModel = viewModel(
@@ -185,7 +188,7 @@ fun PosScreen(
 
 
 
-    //var showTableSelector by remember { mutableStateOf(false) }
+
     // ✅ PAYMENT TYPE STATE (DEFAULT CASH)
     var paymentType by remember { mutableStateOf("CASH") }
 
@@ -609,6 +612,7 @@ fun PosScreen(
                             }
 
                             // -------- CURRENT ORDER CHIP --------
+                            // -------- CURRENT ORDER CHIP --------
                             Spacer(Modifier.width(4.dp))
 
                             OutlinedButton(
@@ -622,12 +626,33 @@ fun PosScreen(
                                 )
                             ) {
                                 Text(
-                                    text = tableName ?: "",
+                                    text = selectedTable?.tableName ?: "Select Table",
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.primary,
                                     fontWeight = FontWeight.SemiBold
                                 )
                             }
+
+
+//                            Spacer(Modifier.width(4.dp))
+//
+//                            OutlinedButton(
+//                                onClick = { showTableSelector = true },
+//                                shape = commonShape,
+//                                modifier = Modifier.height(commonHeight),
+//                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
+//                                border = BorderStroke(
+//                                    1.dp,
+//                                    MaterialTheme.colorScheme.primary
+//                                )
+//                            ) {
+//                                Text(
+//                                    text = tableName ?: "",
+//                                    style = MaterialTheme.typography.bodyMedium,
+//                                    color = MaterialTheme.colorScheme.primary,
+//                                    fontWeight = FontWeight.SemiBold
+//                                )
+//                            }
                         }
                     }
                 }

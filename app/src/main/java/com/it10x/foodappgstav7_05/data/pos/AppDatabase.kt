@@ -23,7 +23,10 @@ import com.it10x.foodappgstav7_05.data.pos.entities.config.*
         PosCustomerLedgerEntity::class,
         ProcessedCloudOrderEntity::class,
         VirtualTableEntity:: class,
-        PrinterEntity::class
+        PrinterEntity::class,
+        PosUserEntity::class,
+        PosPreferenceEntity::class,
+        PosDeviceEntity::class
     ],
     version = 89,              // ⬆️ increment version since schema changed
     exportSchema = true
