@@ -201,10 +201,10 @@ class MainActivity : ComponentActivity() {
                     FirebaseApp.initializeApp(context, options)
                 }
 
-                val firestore = remember(clientId) {
-                    FirebaseFirestore.getInstance()
-                }
-
+//                val firestore = remember(clientId) {
+//                    FirebaseFirestore.getInstance()
+//                }
+                val firestore = remember { FirebaseFirestore.getInstance() }
                 var firstSyncDone by remember {
                     mutableStateOf(FirstSyncManager.isFirstSyncDone(context))
                 }
@@ -239,13 +239,23 @@ class MainActivity : ComponentActivity() {
 
 
 
-                globalOrderSyncManager = GlobalOrderSyncManager(
-                    firestore = firestore,
+//                globalOrderSyncManager = GlobalOrderSyncManager(
+//                    firestore = firestore,
+//
+//                    processedDao,
+//                    kitchenViewModel = kitchenVM,
+//
+//                )
+                val globalOrderSyncManager = remember {
+                    GlobalOrderSyncManager(
+                                            firestore = firestore,
 
                     processedDao,
                     kitchenViewModel = kitchenVM,
+                    )
+                }
 
-                )
+
                 if (role == PosRole.MAIN) {
                     LaunchedEffect(Unit) {
                         globalOrderSyncManager.startListening()
