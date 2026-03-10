@@ -404,14 +404,7 @@ ${"-".repeat(48)}
             append("------------------------\n")
         }
 
-//        val itemsBlock =
-//            if (items.isEmpty()) {
-//                "No items\n"
-//            } else {
-//                items.joinToString("\n") {
-//                    "${it.quantity.toString().padEnd(3)} ${it.name}"
-//                } + "\n"
-//            }
+
 
         val itemsBlock =
             if (items.isEmpty()) {
@@ -443,7 +436,7 @@ ${"-".repeat(48)}
 
                         // 🔹 Note (if any)
                         if (item.note.isNotEmpty()) {
-                            append("      → ${item.note}\n")
+                            append("   ${item.note}\n")
                         }
 
                         append("\n")
@@ -468,6 +461,89 @@ ${"-".repeat(48)}
     }
 
 
+
+    fun posKitchenFontVar(
+        sessionKey: String,
+        orderType: String,
+        items: List<PosKotItemEntity>,
+        title: String = "KITCHEN"
+    ): String {
+
+        val TEXT_NORMAL = "\u001D!\u0000"
+        val TEXT_DOUBLE_HEIGHT = "\u001B!\u0010"
+        val TEXT_DOUBLE_WIDTH = "\u001B!\u0001"
+        val TEXT_BIG = "\u001D!\u0011"
+
+        val time = java.text.SimpleDateFormat(
+            "HH:mm",
+            java.util.Locale.getDefault()
+        ).format(java.util.Date())
+
+        val header = buildString {
+            append(TEXT_BIG)
+            append("******** $title ********\n")
+            append(TEXT_NORMAL)
+            append("Type  : $orderType\n")
+            append("Ref   : $sessionKey\n")
+            append("Time  : $time\n")
+            append("------------------------\n")
+        }
+
+
+
+        val itemsBlock =
+            if (items.isEmpty()) {
+                "No items\n"
+            } else {
+                buildString {
+                    items.forEach { item ->
+
+                        // 🔹 Main item line
+                        append("${item.quantity.toString().padEnd(3)} ${item.name}\n")
+
+                        // 🔹 Modifiers (if any)
+                        if (item.modifiersJson.isNotEmpty()) {
+                            try {
+                                val modifiers = item.modifiersJson
+                                    .removePrefix("[")
+                                    .removeSuffix("]")
+                                    .split(",")
+                                    .map { it.trim().replace("\"", "") }
+                                    .filter { it.isNotBlank() }
+
+                                modifiers.forEach { modifier ->
+                                    append("      + $modifier\n")
+                                }
+                            } catch (_: Exception) {
+                                append("      + ${item.modifiersJson}\n")
+                            }
+                        }
+
+                        // 🔹 Note (if any)
+                        if (item.note.isNotEmpty()) {
+                            append("     ${item.note}\n")
+                        }
+
+                        append("\n")
+                    }
+                }
+            }
+
+//        val modifiers = Gson().fromJson(
+//            item.modifiersJson,
+//            Array<String>::class.java
+//        )
+//        Instead of manual split.
+//        But current version works fine.
+
+
+        return buildString {
+            append(ALIGN_LEFT)
+            append(header)
+            append(itemsBlock)
+            append("------------------------\n\n")
+        }
+    }
 
 
     // -----------------------------
