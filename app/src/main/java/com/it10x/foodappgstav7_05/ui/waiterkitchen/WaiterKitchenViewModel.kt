@@ -52,7 +52,7 @@ class WaiterKitchenViewModel(
 ) : AndroidViewModel(app) {
 
     private var kotPrintJob: Job? = null
-    private val pendingKotItems = mutableListOf<PosKotItemEntity>()
+    private val pendingKotItems = mutableListOf<PosKotItemEntity>( )
     private var pendingBatchId: String? = null
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> get() = _loading
@@ -151,7 +151,7 @@ class WaiterKitchenViewModel(
                     deviceName = deviceName,
                     appVersion = "appVersion"
                 )
-
+            //    Log.d("WaiterKitchenVM", " items=${latestCart.size}")
                 if (!billSaved) {
                     Log.e("WaiterKitchenVM", "❌ Bill save failed")
                     return@launch
