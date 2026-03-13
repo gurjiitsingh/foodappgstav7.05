@@ -28,7 +28,7 @@ import com.it10x.foodappgstav7_05.data.pos.entities.config.*
         PosPreferenceEntity::class,
         PosDeviceEntity::class
     ],
-    version = 89,              // ⬆️ increment version since schema changed
+    version = 91,              // ⬆️ increment version since schema changed
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {

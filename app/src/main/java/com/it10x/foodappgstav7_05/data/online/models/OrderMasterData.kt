@@ -81,8 +81,8 @@ data class OrderMasterData(
     // =====================================================
     // TIMESTAMPS
     // =====================================================
-  //  var createdAt: Timestamp? = null,
-    val createdAt: Any? = null,
+    val createdAt: Timestamp? = null,
+  //  val createdAt: Any? = null,
     var localCreatedAt: Long? = null,
     // =====================================================
     // AUTOMATION
@@ -122,12 +122,7 @@ fun OrderMasterData.formattedTime(): String {
 
 
 fun OrderMasterData.createdAtMillis(): Long {
-    return when (val value = createdAt) {
-        is Timestamp -> value.toDate().time
-        is Long -> value
-        is Double -> value.toLong()
-        else -> localCreatedAt ?: 0L
-    }
+    return createdAt?.toDate()?.time ?: localCreatedAt ?: 0L
 }
 
 

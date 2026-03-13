@@ -19,6 +19,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import com.it10x.foodappgstav7_05.data.mapper.OnlineOrderMapper
 import com.it10x.foodappgstav7_05.data.online.models.createdAtMillis
+import java.util.Calendar
 
 class OnlineOrdersViewModel(
     private val printerManager: PrinterManager
@@ -89,45 +90,97 @@ class OnlineOrdersViewModel(
 
 
 
-fun loadFirstPage() {
-    viewModelScope.launch {
-        _loading.value = true
+//fun loadFirstPage() {
+//    viewModelScope.launch {
+//        _loading.value = true
+//
+//        pageIndex.value = 0
+//
+//        _orders.value = repo.getNextPage(limit.toLong())
+//            .sortedByDescending { it.createdAtMillis() }
+//
+//        _loading.value = false
+//    }
+//}
 
-        pageIndex.value = 0
+    fun loadFirstPage() {
+        viewModelScope.launch {
 
-        _orders.value = repo.getNextPage(limit.toLong())
-            .sortedByDescending { it.createdAtMillis() }
+            _loading.value = true
 
-        _loading.value = false
+            pageIndex.value = 0
+
+            repo.resetPagination()
+
+            _orders.value = repo.getFirstPage(limit.toLong())
+                .sortedByDescending { it.createdAtMillis() }
+
+            _loading.value = false
+        }
     }
-}
 
-fun loadNextPage() {
-    viewModelScope.launch {
-        _loading.value = true
+//fun loadNextPage() {
+//    viewModelScope.launch {
+//        _loading.value = true
+//
+//        pageIndex.value++
+//
+//        _orders.value = repo.getNextPage(limit.toLong())
+//            .sortedByDescending { it.createdAtMillis() }
+//
+//        _loading.value = false
+//    }
+//}
 
-        pageIndex.value++
 
-        _orders.value = repo.getNextPage(limit.toLong())
-            .sortedByDescending { it.createdAtMillis() }
+    fun loadNextPage() {
+        viewModelScope.launch {
 
-        _loading.value = false
+            _loading.value = true
+
+            val newOrders = repo.getNextPage(limit.toLong())
+
+            if (newOrders.isNotEmpty()) {
+                pageIndex.value++
+                _orders.value = newOrders.sortedByDescending { it.createdAtMillis() }
+            }
+
+            _loading.value = false
+        }
     }
-}
 
-fun loadPrevPage() {
-    viewModelScope.launch {
-        _loading.value = true
+//fun loadPrevPage() {
+//    viewModelScope.launch {
+//        _loading.value = true
+//
+//        if (pageIndex.value > 0)
+//            pageIndex.value--
+//
+//        _orders.value = repo.getNextPage(limit.toLong())
+//            .sortedByDescending { it.createdAtMillis() }
+//
+//        _loading.value = false
+//    }
+//}
 
-        if (pageIndex.value > 0)
-            pageIndex.value--
 
-        _orders.value = repo.getNextPage(limit.toLong())
-            .sortedByDescending { it.createdAtMillis() }
+    fun loadPrevPage() {
+        viewModelScope.launch {
 
-        _loading.value = false
+            if (pageIndex.value == 0) return@launch
+
+            _loading.value = true
+
+            val prevOrders = repo.getPrevPage(limit.toLong())
+
+            if (prevOrders.isNotEmpty()) {
+                pageIndex.value--
+                _orders.value = prevOrders.sortedByDescending { it.createdAtMillis() }
+            }
+
+            _loading.value = false
+        }
     }
-}
 
 
 
@@ -171,5 +224,124 @@ fun loadPrevPage() {
             .take(max)
     }
 
+
+    fun searchOrdersByDate(startMillis: Long, endMillis: Long) {
+
+        viewModelScope.launch {
+
+            _loading.value = true
+
+            val orders = repo.searchOrdersByDate(
+                startMillis = startMillis,
+                endMillis = endMillis,
+                limit = 50
+            )
+
+            _orders.value = orders
+                .sortedByDescending { it.createdAtMillis() }
+
+            _loading.value = false
+        }
+    }
+
+    fun buildDayRange(selectedDate: Long): Pair<Long, Long> {
+
+        val calendar = java.util.Calendar.getInstance()
+        calendar.timeInMillis = selectedDate
+
+        calendar.set(Calendar.HOUR_OF_DAY, 0)
+        calendar.set(Calendar.MINUTE, 0)
+        calendar.set(Calendar.SECOND, 0)
+        calendar.set(Calendar.MILLISECOND, 0)
+
+        val start = calendar.timeInMillis
+
+        calendar.set(Calendar.HOUR_OF_DAY, 23)
+        calendar.set(Calendar.MINUTE, 59)
+        calendar.set(Calendar.SECOND, 59)
+
+        val end = calendar.timeInMillis
+
+        return Pair(start, end)
+    }
+
+
+    // -----------------------------
+// POS HISTORY
+// -----------------------------
+    fun loadPosHistoryFirstPage() {
+
+        viewModelScope.launch {
+
+            _loading.value = true
+
+            pageIndex.value = 0
+            repo.resetPagination()
+
+            val orders = repo.getFirstPagePOS(limit.toLong())
+
+            _orders.value = orders
+                .sortedByDescending { it.createdAtMillis() }
+
+            _loading.value = false
+        }
+    }
+
+    fun loadPosHistoryNextPage() {
+
+        viewModelScope.launch {
+
+            _loading.value = true
+
+            val newOrders = repo.getNextPagePOS(limit.toLong())
+
+            if (newOrders.isNotEmpty()) {
+                pageIndex.value++
+                _orders.value = newOrders
+                    .sortedByDescending { it.createdAtMillis() }
+            }
+
+            _loading.value = false
+        }
+    }
+
+    fun loadPosHistoryPrevPage() {
+
+        viewModelScope.launch {
+
+            if (pageIndex.value == 0) return@launch
+
+            _loading.value = true
+
+            val prevOrders = repo.getPrevPagePOS(limit.toLong())
+
+            if (prevOrders.isNotEmpty()) {
+                pageIndex.value--
+                _orders.value = prevOrders
+                    .sortedByDescending { it.createdAtMillis() }
+            }
+
+            _loading.value = false
+        }
+    }
+
+    fun searchPOSOrdersByDate(startMillis: Long, endMillis: Long) {
+
+        viewModelScope.launch {
+
+            _loading.value = true
+
+            val orders = repo.searchPOSOrdersByDate(
+                startMillis = startMillis,
+                endMillis = endMillis,
+                limit = 50
+            )
+
+            _orders.value = orders
+                .sortedByDescending { it.createdAtMillis() }
+
+            _loading.value = false
+        }
+    }
 
 }

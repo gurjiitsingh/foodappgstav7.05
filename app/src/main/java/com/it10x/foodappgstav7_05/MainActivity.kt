@@ -416,6 +416,22 @@ class MainActivity : ComponentActivity() {
                                         }
                                     )
 
+                                    Divider(
+                                        modifier = Modifier
+                                            .padding(horizontal = 16.dp)
+                                            .padding(bottom = 4.dp),
+                                        thickness = 0.5.dp
+                                    )
+                                    NavigationDrawerItem(
+                                        label = { Text("History Orders") },
+                                        selected = false,
+                                        onClick = {
+                                            scope.launch { drawerState.close() }
+                                            navController.navigate("history_orders")
+                                        }
+                                    )
+
+
                                     // ===============================
                                     // SALES / Z-REPORT
                                     // ===============================

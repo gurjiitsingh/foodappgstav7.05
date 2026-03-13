@@ -64,6 +64,7 @@ import com.it10x.foodappgstav7_05.ui.customer.CustomerViewModel
 import com.it10x.foodappgstav7_05.ui.customer.CustomerViewModelFactory
 import com.it10x.foodappgstav7_05.ui.delivery.DeliverySettlementScreen
 import com.it10x.foodappgstav7_05.ui.delivery.DeliverySettlementViewModel
+import com.it10x.foodappgstav7_05.ui.orders.history.HistoryOrdersScreen
 
 import com.it10x.foodappgstav7_05.ui.pos.PosSessionViewModel
 import com.it10x.foodappgstav7_05.ui.pos.customer.CustomerAddressScreen
@@ -299,6 +300,15 @@ fun NavigationHost(
                 posSessionViewModel = posSessionViewModel,
                 cartViewModel = cartViewModel,
                 posTableViewModel = posTableViewModel
+            )
+        }
+
+
+        composable("history_orders") {
+            HistoryOrdersScreen(
+                printerManager = printerManager,
+                ordersViewModel = ordersViewModel,
+                realtimeOrdersViewModel = realtimeOrdersViewModel
             )
         }
 

@@ -6,7 +6,8 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import kotlinx.coroutines.tasks.await
-
+import java.util.Date
+import com.it10x.foodappgstav7_05.utils.createdAtMillis
 class OrdersRepository {
 
     private val db = FirebaseFirestore.getInstance()
@@ -188,5 +189,274 @@ class OrdersRepository {
             .await()
     }
 
+
+
+    suspend fun searchOrdersByDate(
+        startMillis: Long,
+        endMillis: Long,
+        limit: Long = 20
+    ): List<OrderMasterData> {
+
+        return try {
+
+            val startTimestamp = com.google.firebase.Timestamp(Date(startMillis))
+            val endTimestamp = com.google.firebase.Timestamp(Date(endMillis))
+
+            val snapshot = db.collection("orderMaster")
+                .whereIn("source", listOf("WEB", "APP", "ONLINE"))
+                .whereGreaterThanOrEqualTo("createdAt", startTimestamp)
+                .whereLessThanOrEqualTo("createdAt", endTimestamp)
+                .orderBy("createdAt", Query.Direction.DESCENDING)
+                .limit(limit)
+                .get()
+                .await()
+
+            snapshot.documents.mapNotNull {
+                it.toObject(OrderMasterData::class.java)?.copy(id = it.id)
+            }
+
+        } catch (e: Exception) {
+
+            android.util.Log.e("ORDER_SEARCH", "Date search failed", e)
+            emptyList()
+
+        }
+    }
+
+
+
+
+
+    suspend fun getFirstPagePOS(limit: Long = 10): List<OrderMasterData> {
+
+        return try {
+
+            val snapshot = db.collection("orderMaster")
+                .whereEqualTo("source", "POS")
+                .orderBy("createdAt", Query.Direction.DESCENDING)
+                .limit(limit)
+                .get()
+                .await()
+
+            val docs = snapshot.documents
+
+            if (docs.isNotEmpty()) {
+                pageAnchors.clear()
+                pageAnchors.add(docs.first())
+                lastDocument = docs.last()
+            }
+
+            docs.mapNotNull {
+                it.toObject(OrderMasterData::class.java)?.copy(id = it.id)
+            }
+
+        } catch (e: Exception) {
+
+            android.util.Log.e("POS_HISTORY", "First page failed", e)
+            emptyList()
+
+        }
+    }
+
+
+
+    suspend fun getNextPagePOS(limit: Long = 10): List<OrderMasterData> {
+
+        if (lastDocument == null) return emptyList()
+
+        return try {
+
+            val snapshot = db.collection("orderMaster")
+                .whereEqualTo("source", "POS")
+                .orderBy("createdAt", Query.Direction.DESCENDING)
+                .startAfter(lastDocument!!)
+                .limit(limit)
+                .get()
+                .await()
+
+            val docs = snapshot.documents
+
+            if (docs.isNotEmpty()) {
+                pageAnchors.add(docs.first())
+                lastDocument = docs.last()
+            }
+
+            docs.mapNotNull {
+                it.toObject(OrderMasterData::class.java)?.copy(id = it.id)
+            }
+
+        } catch (e: Exception) {
+
+            android.util.Log.e("POS_HISTORY", "Next page failed", e)
+            emptyList()
+
+        }
+    }
+
+
+    suspend fun getPrevPagePOS(limit: Long = 10): List<OrderMasterData> {
+
+        if (pageAnchors.size < 2) return emptyList()
+
+        pageAnchors.removeLast()
+        val prevAnchor = pageAnchors.last()
+
+        return try {
+
+            val snapshot = db.collection("orderMaster")
+                .whereEqualTo("source", "POS")
+                .orderBy("createdAt", Query.Direction.DESCENDING)
+                .startAt(prevAnchor)
+                .limit(limit)
+                .get()
+                .await()
+
+            val docs = snapshot.documents
+
+            if (docs.isNotEmpty()) {
+                lastDocument = docs.last()
+            }
+
+            docs.mapNotNull {
+                it.toObject(OrderMasterData::class.java)?.copy(id = it.id)
+            }
+
+        } catch (e: Exception) {
+
+            android.util.Log.e("POS_HISTORY", "Prev page failed", e)
+            emptyList()
+
+        }
+    }
+
+    suspend fun searchPOSOrdersByDateLocal(
+        startMillis: Long,
+        endMillis: Long
+    ): List<OrderMasterData> {
+
+        return try {
+
+            val snapshot = db.collection("orderMaster")
+                .orderBy("createdAt", Query.Direction.DESCENDING)
+                .get()
+                .await()
+
+            android.util.Log.d("POS_HISTORY", "Total docs fetched: ${snapshot.size()}")
+
+            val orders = snapshot.documents.mapNotNull {
+                it.toObject(OrderMasterData::class.java)?.copy(id = it.id)
+            }
+
+//            val filtered = orders.filter {
+//
+//                val created = it.createdAtMillis()
+//
+//                created in startMillis..endMillis &&
+//                        it.source == "POS"
+//            }
+
+            val filtered = orders.filter {
+
+                val created = it.createdAtMillis()
+
+                created in startMillis..endMillis &&
+                        it.source == "POS"
+            }
+
+            android.util.Log.d("POS_HISTORY", "Filtered orders: ${filtered.size}")
+
+            filtered
+
+        } catch (e: Exception) {
+
+            android.util.Log.e("POS_HISTORY", "Local date search failed", e)
+            emptyList()
+
+        }
+    }
+
+
+    // -----------------------------
+// SIMPLE HISTORY TEST (NO FILTER)
+// -----------------------------
+    suspend fun getHistoryOrdersTest(limit: Long = 20): List<OrderMasterData> {
+
+        return try {
+
+            android.util.Log.d("HISTORY_TEST", "Fetching history orders...")
+
+            val snapshot = db.collection("orderMaster")
+                .limit(limit)
+                .get()
+                .await()
+
+            android.util.Log.d("HISTORY_TEST", "Documents found: ${snapshot.size()}")
+
+            snapshot.documents.forEach { doc ->
+                android.util.Log.d(
+                    "HISTORY_TEST",
+                    "DocID=${doc.id} | createdAt=${doc.get("createdAt")} | source=${doc.get("source")}"
+                )
+            }
+
+            val orders = snapshot.documents.mapNotNull {
+                it.toObject(OrderMasterData::class.java)?.copy(id = it.id)
+            }
+
+            android.util.Log.d("HISTORY_TEST", "Mapped orders count: ${orders.size}")
+
+            orders
+
+        } catch (e: Exception) {
+
+            android.util.Log.e("HISTORY_TEST", "History fetch failed", e)
+            emptyList()
+
+        }
+    }
+
+
+    suspend fun searchPOSOrdersByDate(
+        startMillis: Long,
+        endMillis: Long,
+        limit: Long = 50
+    ): List<OrderMasterData> {
+
+        return try {
+
+            android.util.Log.d("POS_HISTORY", "Fetching orders without Firestore date filter")
+
+            val snapshot = db.collection("orderMaster")
+                .whereEqualTo("source", "POS")
+                .limit(limit)
+                .get()
+                .await()
+
+            val orders = snapshot.documents.mapNotNull {
+                it.toObject(OrderMasterData::class.java)?.copy(id = it.id)
+            }
+
+            // Filter locally (NO Firestore index needed)
+            val filtered = orders.filter {
+
+                val created = it.createdAtMillis()
+
+                created in startMillis..endMillis
+            }
+
+            android.util.Log.d(
+                "POS_HISTORY",
+                "Orders fetched: ${orders.size} | Filtered: ${filtered.size}"
+            )
+
+            filtered
+
+        } catch (e: Exception) {
+
+            android.util.Log.e("POS_HISTORY", "POS Date search failed", e)
+
+            emptyList()
+        }
+    }
 
 }
