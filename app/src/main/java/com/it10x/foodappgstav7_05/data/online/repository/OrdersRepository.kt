@@ -1,5 +1,6 @@
 package com.it10x.foodappgstav7_05.data.online.models.repository
 
+import android.util.Log
 import com.it10x.foodappgstav7_05.data.online.models.OrderMasterData
 import com.it10x.foodappgstav7_05.data.online.models.OrderProductData
 import com.google.firebase.firestore.DocumentSnapshot
@@ -8,6 +9,9 @@ import com.google.firebase.firestore.Query
 import kotlinx.coroutines.tasks.await
 import java.util.Date
 import com.it10x.foodappgstav7_05.utils.createdAtMillis
+import java.text.SimpleDateFormat
+import java.util.Locale
+
 class OrdersRepository {
 
     private val db = FirebaseFirestore.getInstance()
@@ -31,7 +35,7 @@ class OrdersRepository {
             // 🧠 Try the fast, indexed query first
             val snapshot = db.collection("orderMaster")
                 .whereIn("source", listOf("WEB", "APP", "ONLINE"))
-                .orderBy("createdAt", Query.Direction.DESCENDING)
+                .orderBy("createdAtMillis", Query.Direction.DESCENDING)
                 .limit(limit)
                 .get()
                 .await()
@@ -50,7 +54,7 @@ class OrdersRepository {
             android.util.Log.w("ORDER_FETCH", "Indexed query failed, falling back: ${e.message}")
 
             val snapshot = db.collection("orderMaster")
-                .orderBy("createdAt", Query.Direction.DESCENDING)
+                .orderBy("createdAtMillis", Query.Direction.DESCENDING)
                 .limit(limit * 3)
                 .get()
                 .await()
@@ -75,7 +79,7 @@ class OrdersRepository {
         return try {
             val snapshot = db.collection("orderMaster")
                 .whereIn("source", listOf("WEB", "APP", "ONLINE"))
-                .orderBy("createdAt", Query.Direction.DESCENDING)
+                .orderBy("createdAtMillis", Query.Direction.DESCENDING)
                 .startAfter(lastDocument!!)
                 .limit(limit)
                 .get()
@@ -93,7 +97,7 @@ class OrdersRepository {
             android.util.Log.w("ORDER_FETCH", "Next page fallback: ${e.message}")
 
             val snapshot = db.collection("orderMaster")
-                .orderBy("createdAt", Query.Direction.DESCENDING)
+                .orderBy("createdAtMillis", Query.Direction.DESCENDING)
                 .startAfter(lastDocument!!)
                 .limit(limit * 3)
                 .get()
@@ -123,7 +127,7 @@ class OrdersRepository {
             // 🧠 Try indexed query first
             val snapshot = db.collection("orderMaster")
                 .whereIn("source", listOf("WEB", "APP", "ONLINE"))
-                .orderBy("createdAt", Query.Direction.DESCENDING)
+                .orderBy("createdAtMillis", Query.Direction.DESCENDING)
                 .startAt(prevAnchor)
                 .limit(limit)
                 .get()
@@ -141,7 +145,7 @@ class OrdersRepository {
             android.util.Log.w("ORDER_FETCH", "Prev page fallback: ${e.message}")
 
             val snapshot = db.collection("orderMaster")
-                .orderBy("createdAt", Query.Direction.DESCENDING)
+                .orderBy("createdAtMillis", Query.Direction.DESCENDING)
                 .startAt(prevAnchor)
                 .limit(limit * 3)
                 .get()
@@ -170,7 +174,7 @@ class OrdersRepository {
     // -----------------------------
     suspend fun getOrderProducts(orderMasterId: String): List<OrderProductData> {
 
-     //  Log.d("ORDER_REPO", "Fetching items for orderId=$orderMasterId")
+        //  Log.d("ORDER_REPO", "Fetching items for orderId=$orderMasterId")
 
         val snapshot = db.collection("orderProducts")
             .whereEqualTo("orderMasterId", orderMasterId)
@@ -206,7 +210,7 @@ class OrdersRepository {
                 .whereIn("source", listOf("WEB", "APP", "ONLINE"))
                 .whereGreaterThanOrEqualTo("createdAt", startTimestamp)
                 .whereLessThanOrEqualTo("createdAt", endTimestamp)
-                .orderBy("createdAt", Query.Direction.DESCENDING)
+                .orderBy("createdAtMillis", Query.Direction.DESCENDING)
                 .limit(limit)
                 .get()
                 .await()
@@ -227,34 +231,30 @@ class OrdersRepository {
 
 
 
-    suspend fun getFirstPagePOS(limit: Long = 10): List<OrderMasterData> {
+    suspend fun getFirstPagePOS(limit: Long = 5): List<OrderMasterData> {
 
         return try {
 
             val snapshot = db.collection("orderMaster")
-                .whereEqualTo("source", "POS")
-                .orderBy("createdAt", Query.Direction.DESCENDING)
-                .limit(limit)
+                .orderBy("createdAtMillis", Query.Direction.DESCENDING)
+                .limit(limit) // fetch more for local filtering
                 .get()
                 .await()
 
-            val docs = snapshot.documents
-
-            if (docs.isNotEmpty()) {
-                pageAnchors.clear()
-                pageAnchors.add(docs.first())
-                lastDocument = docs.last()
-            }
-
-            docs.mapNotNull {
+            val allOrders = snapshot.documents.mapNotNull {
                 it.toObject(OrderMasterData::class.java)?.copy(id = it.id)
             }
 
+            val posOrders = allOrders
+                .filter { it.source == "POS" }
+                .take(limit.toInt())
+
+            posOrders
+
         } catch (e: Exception) {
 
-            android.util.Log.e("POS_HISTORY", "First page failed", e)
+            Log.e("POS_HISTORY", "First page failed", e)
             emptyList()
-
         }
     }
 
@@ -268,7 +268,7 @@ class OrdersRepository {
 
             val snapshot = db.collection("orderMaster")
                 .whereEqualTo("source", "POS")
-                .orderBy("createdAt", Query.Direction.DESCENDING)
+                .orderBy("createdAtMillis", Query.Direction.DESCENDING)
                 .startAfter(lastDocument!!)
                 .limit(limit)
                 .get()
@@ -305,7 +305,7 @@ class OrdersRepository {
 
             val snapshot = db.collection("orderMaster")
                 .whereEqualTo("source", "POS")
-                .orderBy("createdAt", Query.Direction.DESCENDING)
+                .orderBy("createdAtMillis", Query.Direction.DESCENDING)
                 .startAt(prevAnchor)
                 .limit(limit)
                 .get()
@@ -329,105 +329,32 @@ class OrdersRepository {
         }
     }
 
-    suspend fun searchPOSOrdersByDateLocal(
-        startMillis: Long,
-        endMillis: Long
-    ): List<OrderMasterData> {
 
-        return try {
-
-            val snapshot = db.collection("orderMaster")
-                .orderBy("createdAt", Query.Direction.DESCENDING)
-                .get()
-                .await()
-
-            android.util.Log.d("POS_HISTORY", "Total docs fetched: ${snapshot.size()}")
-
-            val orders = snapshot.documents.mapNotNull {
-                it.toObject(OrderMasterData::class.java)?.copy(id = it.id)
-            }
-
-//            val filtered = orders.filter {
-//
-//                val created = it.createdAtMillis()
-//
-//                created in startMillis..endMillis &&
-//                        it.source == "POS"
-//            }
-
-            val filtered = orders.filter {
-
-                val created = it.createdAtMillis()
-
-                created in startMillis..endMillis &&
-                        it.source == "POS"
-            }
-
-            android.util.Log.d("POS_HISTORY", "Filtered orders: ${filtered.size}")
-
-            filtered
-
-        } catch (e: Exception) {
-
-            android.util.Log.e("POS_HISTORY", "Local date search failed", e)
-            emptyList()
-
-        }
-    }
 
 
     // -----------------------------
 // SIMPLE HISTORY TEST (NO FILTER)
 // -----------------------------
-    suspend fun getHistoryOrdersTest(limit: Long = 20): List<OrderMasterData> {
-
-        return try {
-
-            android.util.Log.d("HISTORY_TEST", "Fetching history orders...")
-
-            val snapshot = db.collection("orderMaster")
-                .limit(limit)
-                .get()
-                .await()
-
-            android.util.Log.d("HISTORY_TEST", "Documents found: ${snapshot.size()}")
-
-            snapshot.documents.forEach { doc ->
-                android.util.Log.d(
-                    "HISTORY_TEST",
-                    "DocID=${doc.id} | createdAt=${doc.get("createdAt")} | source=${doc.get("source")}"
-                )
-            }
-
-            val orders = snapshot.documents.mapNotNull {
-                it.toObject(OrderMasterData::class.java)?.copy(id = it.id)
-            }
-
-            android.util.Log.d("HISTORY_TEST", "Mapped orders count: ${orders.size}")
-
-            orders
-
-        } catch (e: Exception) {
-
-            android.util.Log.e("HISTORY_TEST", "History fetch failed", e)
-            emptyList()
-
-        }
-    }
-
 
     suspend fun searchPOSOrdersByDate(
         startMillis: Long,
         endMillis: Long,
-        limit: Long = 50
+        limit: Long = 100
     ): List<OrderMasterData> {
-
+        Log.d("POS_HISTORY","this is tex")
         return try {
 
-            android.util.Log.d("POS_HISTORY", "Fetching orders without Firestore date filter")
+            val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+
+            val startDate = formatter.format(Date(startMillis))
+            val endDate = formatter.format(Date(endMillis))
+
+            Log.d("POS_HISTORY", "StartDate = $startDate")
+            Log.d("POS_HISTORY", "EndDate = $endDate")
 
             val snapshot = db.collection("orderMaster")
-                .whereEqualTo("source", "POS")
+                .whereGreaterThanOrEqualTo("orderDate", startDate)
+                .whereLessThanOrEqualTo("orderDate", endDate)
                 .limit(limit)
                 .get()
                 .await()
@@ -436,25 +363,12 @@ class OrdersRepository {
                 it.toObject(OrderMasterData::class.java)?.copy(id = it.id)
             }
 
-            // Filter locally (NO Firestore index needed)
-            val filtered = orders.filter {
-
-                val created = it.createdAtMillis()
-
-                created in startMillis..endMillis
-            }
-
-            android.util.Log.d(
-                "POS_HISTORY",
-                "Orders fetched: ${orders.size} | Filtered: ${filtered.size}"
-            )
-
-            filtered
+            // Filter POS locally (no index required)
+            orders.filter { it.source == "POS" }
 
         } catch (e: Exception) {
 
             android.util.Log.e("POS_HISTORY", "POS Date search failed", e)
-
             emptyList()
         }
     }

@@ -46,6 +46,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.update
 import com.it10x.foodappgstav7_05.data.pos.manager.TableSyncManager
 import com.it10x.foodappgstav7_05.utils.MoneyUtils
+import kotlin.math.roundToLong
 
 class BillViewModel(
     private val kotItemDao: KotItemDao,
@@ -276,7 +277,14 @@ class BillViewModel(
         name: String,
         phone: String
     ) {
-        Log.d("PAY_DEBUG", "---- PAY BILL START ----: $name")
+        Log.d("PAY_DEBUG", "----------- PAYMENT INPUTS -----------")
+
+        payments.forEach {
+            Log.d(
+                "PAY_DEBUG",
+                "Mode: ${it.mode} | Amount: ${it.amount} | Paise: ${MoneyUtils.toPaise(it.amount)}"
+            )
+        }
         if (_isProcessing.value) {
             sendEvent("Payment already in progress")
             return
@@ -322,8 +330,8 @@ class BillViewModel(
 
                         val basePaise = MoneyUtils.toPaise(it.basePrice)
 
-                        ((basePaise * it.taxRate) / 100.0).toLong() * it.quantity
-
+                       // ((basePaise * it.taxRate) / 100.0).toLong() * it.quantity
+                        ((basePaise * it.taxRate) / 100.0).roundToLong()
                     } else 0L
                 }
 
@@ -359,15 +367,29 @@ class BillViewModel(
                 val grandTotalPaise =
                     itemSubtotalPaise - safeDiscountPaise + taxTotalPaise
 
+                Log.d("PAY_DEBUG", "----------- BILL TOTALS -----------")
+                Log.d("PAY_DEBUG", "ItemSubtotalPaise: $itemSubtotalPaise")
+                Log.d("PAY_DEBUG", "TaxTotalPaise: $taxTotalPaise")
+                Log.d("PAY_DEBUG", "DiscountPaise: $safeDiscountPaise")
+                Log.d("PAY_DEBUG", "GrandTotalPaise: $grandTotalPaise")
+
             // ===========================
             // PAYMENT CALCULATION
             // ===========================
 
 
 
-                val totalPaidPaise = payments.sumOf {
-                    MoneyUtils.toPaise(it.amount)
-                }
+//                val totalPaidPaise = payments.sumOf {
+//                    MoneyUtils.toPaise(it.amount)
+//                }
+
+                val unpaidModes = setOf("CREDIT", "DELIVERY_PENDING", "WAITER_PENDING")
+
+                val totalPaidPaise = payments
+                    .filter { it.mode !in unpaidModes }
+                    .sumOf { MoneyUtils.toPaise(it.amount) }
+
+
 
             val totalCredit = payments
                 .filter { it.mode == "CREDIT" }
@@ -380,7 +402,11 @@ class BillViewModel(
                 val waiterPending = payments
                     .filter { it.mode == "WAITER_PENDING" }
                     .sumOf { it.amount }
-
+                Log.d("PAY_DEBUG", "----------- PAYMENT BREAKDOWN -----------")
+                Log.d("PAY_DEBUG", "TotalPaidPaise: $totalPaidPaise")
+                Log.d("PAY_DEBUG", "TotalCredit: $totalCredit")
+                Log.d("PAY_DEBUG", "DeliveryPending: $deliveryPending")
+                Log.d("PAY_DEBUG", "WaiterPending: $waiterPending")
 
 
                 val paidAmountPaise = when {
@@ -395,7 +421,11 @@ class BillViewModel(
 //                    else -> (grandTotal - totalPaid).coerceAtLeast(0.0)
 //                }
 
+            //    val duePaise = (grandTotalPaise - totalPaidPaise).coerceAtLeast(0)
                 val duePaise = (grandTotalPaise - totalPaidPaise).coerceAtLeast(0)
+
+                val adjustedDue = if (duePaise <= 0) 0 else duePaise
+
 
 
 //                val paymentStatus = when {
@@ -414,28 +444,47 @@ class BillViewModel(
 
                     totalPaidPaise == 0L && totalCredit > 0 -> "CREDIT"
 
-                    duePaise > 0 -> "PARTIAL"
+                    adjustedDue > 0 -> "PARTIAL"
 
                     else -> "PAID"
                 }
+
+                Log.d("PAY_DEBUG", "----------- FINAL CALCULATION -----------")
+                Log.d("PAY_DEBUG", "PaidAmountPaise: $paidAmountPaise")
+                Log.d("PAY_DEBUG", "DuePaise: $duePaise")
+                Log.d("PAY_DEBUG", "AdjustedDue: $adjustedDue")
+                Log.d("PAY_DEBUG", "PaymentStatus: paymentStatus")
 
                 Log.d("PAY_DEBUG", "---- PAY BILL START ----: $paymentStatus")
             // ===========================
             // PHONE VALIDATION
             // ===========================
 
-                if ((paymentStatus == "CREDIT" || paymentStatus == "PARTIAL")
-                    && inputPhone.isBlank()
+
+//val hasCredit = payments.any { it.mode == "CREDIT" }
+//
+//                if (hasCredit &&
+//                    (paymentStatus == "CREDIT" || paymentStatus == "PARTIAL") &&
+//                    inputPhone.isBlank()
+//                ) {
+//                    sendEvent("Phone required for credit sale")
+//                    return@launch
+//                }
+                val isCashOnly = payments.all { it.mode == "CASH" }
+
+                if (!isCashOnly &&
+                    (paymentStatus == "CREDIT" || paymentStatus == "PARTIAL") &&
+                    inputPhone.isBlank()
                 ) {
                     sendEvent("Phone required for credit sale")
                     return@launch
                 }
 
-            Log.d("PAY_DEBUG", "---- PAY BILL START ----")
-            Log.d("PAY_DEBUG", "Payments: $payments")
-            Log.d("PAY_DEBUG", "Name: $name")
-            Log.d("PAY_DEBUG", "Phone: $phone")
-            Log.d("PAY_DEBUG", "GrandTotal: ${_uiState.value.total}")
+                Log.d("PAY_DEBUG", "----------- ORDER SAVE -----------")
+                Log.d("PAY_DEBUG", "PaidAmount: ${MoneyUtils.fromPaise(paidAmountPaise)}")
+                Log.d("PAY_DEBUG", "DueAmount: ${MoneyUtils.fromPaise(adjustedDue)}")
+              //  Log.d("PAY_DEBUG", "PaymentMode: $Paymens")
+                Log.d("PAY_DEBUG", "PaymentStatus: $paymentStatus")
 
             // ===========================
 // ENSURE CUSTOMER EXISTS (IF PHONE ENTERED)
@@ -486,9 +535,6 @@ class BillViewModel(
 
              //   val existingCustomer = customerDao.getCustomerById(inputPhone)
                 val existingCustomer = customerDao.getCustomerByPhone(inputPhone)
-
-
-
 
                     customerDao.increaseDue(inputPhone, totalCredit)
 
@@ -550,7 +596,7 @@ class BillViewModel(
                // paidAmount = paidAmount,
                 paidAmount = MoneyUtils.fromPaise(paidAmountPaise),
               //  dueAmount = dueAmount,
-                dueAmount = MoneyUtils.fromPaise(duePaise),
+                dueAmount = MoneyUtils.fromPaise(adjustedDue),
 
                 orderStatus = "COMPLETED",
 

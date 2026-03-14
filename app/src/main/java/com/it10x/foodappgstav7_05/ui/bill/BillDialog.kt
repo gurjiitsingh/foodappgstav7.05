@@ -503,35 +503,13 @@ fun BillDialog(
                                                 return@IconButton
                                             }
 
-
-
-
-
                                             paymentList.add(PaymentInput("CREDIT", amount))
                                             partialPaidAmount += amount
 
                                             creditAmount.value = ""
                                             activeInput = null
                                             isCreditSelected = false
-//
-//                                            if (partialPaidAmount >= totalAmount) {
-//                                                billViewModel.payBill(
-//                                                    payments = paymentList.toList(),
-//                                                    name = "Customer",
-//                                                    phone = uiState.value.customerPhone
-//                                                )
-//                                                onDismiss()
-//                                            } else {
-//                                                showRemainingOptions = true
-//                                            }
-                                            billViewModel.payBill(
-                                                payments = paymentList.toList(),
-                                                name = "Customer",
-                                                phone = uiState.value.customerPhone
-                                            )
-
-                                            onDismiss()
-
+                                            showRemainingOptions = true
 
                                         },
                                         modifier = Modifier
@@ -659,8 +637,8 @@ fun BillDialog(
                         ) {
                             Button(
                                 onClick = {
-                                    val amountToPay = if (showRemainingOptions) remainingAmount else billViewModel.uiState.value.total
-
+                                  //  val amountToPay = if (showRemainingOptions) remainingAmount else billViewModel.uiState.value.total
+                                    val amountToPay = remainingAmount
                                     val finalPayments = paymentList.toMutableList()
                                     finalPayments.add(PaymentInput("CASH", amountToPay))
 

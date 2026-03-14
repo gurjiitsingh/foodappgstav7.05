@@ -9,7 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.it10x.foodappgstav7_05.data.online.models.OrderMasterData
-import com.it10x.foodappgstav7_05.data.online.models.createdAtMillis
+//import com.it10x.foodappgstav7_05.data.online.models.createdAtMillis
 import com.it10x.foodappgstav7_05.printer.PrinterManager
 import com.it10x.foodappgstav7_05.viewmodel.OnlineOrdersViewModel
 import com.it10x.foodappgstav7_05.viewmodel.RealtimeOrdersViewModel
@@ -40,10 +40,10 @@ fun OnlineOrdersScreen(
     // Original orders list
     // -----------------
    // LaunchedEffect(Unit) { ordersViewModel.loadFirstPage() }
-    LaunchedEffect(Unit) {
-        realtimeOrdersViewModel.startListening()
-        ordersViewModel.loadFirstPage()
-    }
+//    LaunchedEffect(Unit) {
+//        realtimeOrdersViewModel.startListening()
+//        ordersViewModel.loadFirstPage()
+//    }
 
     val pagedOrders by ordersViewModel.orders.collectAsState()
     val realtimeOrders by realtimeOrdersViewModel.realtimeOrders.collectAsState()
@@ -57,7 +57,7 @@ fun OnlineOrdersScreen(
             realtimeOrders + pagedOrders.filter { it.id !in realtimeIds }
         } else pagedOrders
 
-        list.sortedByDescending { it.createdAtMillis() }
+        list.sortedByDescending { it.createdAtMillis }
     }
 
     Column(

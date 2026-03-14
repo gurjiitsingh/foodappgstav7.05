@@ -65,6 +65,7 @@ import com.it10x.foodappgstav7_05.ui.customer.CustomerViewModelFactory
 import com.it10x.foodappgstav7_05.ui.delivery.DeliverySettlementScreen
 import com.it10x.foodappgstav7_05.ui.delivery.DeliverySettlementViewModel
 import com.it10x.foodappgstav7_05.ui.orders.history.HistoryOrdersScreen
+import com.it10x.foodappgstav7_05.ui.orders.history.OrderItemsScreen
 
 import com.it10x.foodappgstav7_05.ui.pos.PosSessionViewModel
 import com.it10x.foodappgstav7_05.ui.pos.customer.CustomerAddressScreen
@@ -308,7 +309,20 @@ fun NavigationHost(
             HistoryOrdersScreen(
                 printerManager = printerManager,
                 ordersViewModel = ordersViewModel,
-                realtimeOrdersViewModel = realtimeOrdersViewModel
+                realtimeOrdersViewModel = realtimeOrdersViewModel,
+                navController = navController
+            )
+        }
+
+        composable(
+            "history_order_items/{orderId}"
+        ) { backStackEntry ->
+
+            val orderId = backStackEntry.arguments?.getString("orderId") ?: ""
+
+            OrderItemsScreen(
+                orderId = orderId,
+                navController = navController
             )
         }
 

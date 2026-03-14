@@ -18,7 +18,7 @@ import com.it10x.foodappgstav7_05.data.pos.AppDatabaseProvider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import com.it10x.foodappgstav7_05.data.mapper.OnlineOrderMapper
-import com.it10x.foodappgstav7_05.data.online.models.createdAtMillis
+//import com.it10x.foodappgstav7_05.data.online.models.createdAtMillis
 import java.util.Calendar
 
 class OnlineOrdersViewModel(
@@ -97,7 +97,7 @@ class OnlineOrdersViewModel(
 //        pageIndex.value = 0
 //
 //        _orders.value = repo.getNextPage(limit.toLong())
-//            .sortedByDescending { it.createdAtMillis() }
+//            .sortedByDescending { it.createdAtMillis }
 //
 //        _loading.value = false
 //    }
@@ -113,7 +113,7 @@ class OnlineOrdersViewModel(
             repo.resetPagination()
 
             _orders.value = repo.getFirstPage(limit.toLong())
-                .sortedByDescending { it.createdAtMillis() }
+                .sortedByDescending { it.createdAtMillis }
 
             _loading.value = false
         }
@@ -126,7 +126,7 @@ class OnlineOrdersViewModel(
 //        pageIndex.value++
 //
 //        _orders.value = repo.getNextPage(limit.toLong())
-//            .sortedByDescending { it.createdAtMillis() }
+//            .sortedByDescending { it.createdAtMillis }
 //
 //        _loading.value = false
 //    }
@@ -142,7 +142,7 @@ class OnlineOrdersViewModel(
 
             if (newOrders.isNotEmpty()) {
                 pageIndex.value++
-                _orders.value = newOrders.sortedByDescending { it.createdAtMillis() }
+                _orders.value = newOrders.sortedByDescending { it.createdAtMillis }
             }
 
             _loading.value = false
@@ -157,7 +157,7 @@ class OnlineOrdersViewModel(
 //            pageIndex.value--
 //
 //        _orders.value = repo.getNextPage(limit.toLong())
-//            .sortedByDescending { it.createdAtMillis() }
+//            .sortedByDescending { it.createdAtMillis }
 //
 //        _loading.value = false
 //    }
@@ -175,7 +175,7 @@ class OnlineOrdersViewModel(
 
             if (prevOrders.isNotEmpty()) {
                 pageIndex.value--
-                _orders.value = prevOrders.sortedByDescending { it.createdAtMillis() }
+                _orders.value = prevOrders.sortedByDescending { it.createdAtMillis }
             }
 
             _loading.value = false
@@ -238,7 +238,7 @@ class OnlineOrdersViewModel(
             )
 
             _orders.value = orders
-                .sortedByDescending { it.createdAtMillis() }
+                .sortedByDescending { it.createdAtMillis }
 
             _loading.value = false
         }
@@ -281,7 +281,7 @@ class OnlineOrdersViewModel(
             val orders = repo.getFirstPagePOS(limit.toLong())
 
             _orders.value = orders
-                .sortedByDescending { it.createdAtMillis() }
+                .sortedByDescending { it.createdAtMillis }
 
             _loading.value = false
         }
@@ -298,7 +298,7 @@ class OnlineOrdersViewModel(
             if (newOrders.isNotEmpty()) {
                 pageIndex.value++
                 _orders.value = newOrders
-                    .sortedByDescending { it.createdAtMillis() }
+                    .sortedByDescending { it.createdAtMillis }
             }
 
             _loading.value = false
@@ -318,7 +318,7 @@ class OnlineOrdersViewModel(
             if (prevOrders.isNotEmpty()) {
                 pageIndex.value--
                 _orders.value = prevOrders
-                    .sortedByDescending { it.createdAtMillis() }
+                    .sortedByDescending { it.createdAtMillis }
             }
 
             _loading.value = false
@@ -334,11 +334,11 @@ class OnlineOrdersViewModel(
             val orders = repo.searchPOSOrdersByDate(
                 startMillis = startMillis,
                 endMillis = endMillis,
-                limit = 50
+                limit = 100
             )
 
             _orders.value = orders
-                .sortedByDescending { it.createdAtMillis() }
+                .sortedByDescending { it.createdAtMillis }
 
             _loading.value = false
         }

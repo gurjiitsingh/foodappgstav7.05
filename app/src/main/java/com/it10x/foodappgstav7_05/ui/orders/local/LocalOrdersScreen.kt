@@ -42,11 +42,11 @@ fun LocalOrdersScreen(
             .fillMaxSize()
             .padding(12.dp)
     ) {
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 10.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
 
@@ -59,6 +59,8 @@ fun LocalOrdersScreen(
                 )
             }
 
+            Spacer(Modifier.width(8.dp))
+
             Button(
                 enabled = selectedDate != null,
                 onClick = {
@@ -70,6 +72,8 @@ fun LocalOrdersScreen(
                 Text("Search")
             }
 
+            Spacer(Modifier.width(8.dp))
+
             OutlinedButton(
                 onClick = {
                     selectedDate = null
@@ -77,6 +81,18 @@ fun LocalOrdersScreen(
                 }
             ) {
                 Text("Reset")
+            }
+
+            // 🔹 Push next button to extreme right
+            Spacer(modifier = Modifier.weight(1f))
+
+            // 🔹 History Orders Button (same navigation as drawer)
+            Button(
+                onClick = {
+                    navController.navigate("history_orders")
+                }
+            ) {
+                Text("History Orders")
             }
         }
 

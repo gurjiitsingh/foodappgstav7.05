@@ -11,7 +11,7 @@ class RealtimeOrdersRepository {
     private val db = FirebaseFirestore.getInstance()
     private var listener: ListenerRegistration? = null
 
-    fun startListening(
+    fun startListening_working(
         onNewOrder: (OrderMasterData) -> Unit
     ) {
         listener = db.collection("orderMaster")
@@ -43,7 +43,12 @@ class RealtimeOrdersRepository {
                 }
             }
     }
-
+    fun startListening(
+        onNewOrder: (OrderMasterData) -> Unit
+    ) {
+        // 🔴 COMPLETELY DISABLED DURING MIGRATION
+        // Online order listener turned off so POS can run safely
+    }
     fun stopListening() {
         listener?.remove()
         listener = null

@@ -15,7 +15,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Print
-import com.it10x.foodappgstav7_05.data.online.models.createdAtMillis
+//import com.it10x.foodappgstav7_05.data.online.models.createdAtMillis
 
 //import com.it10x.foodappgstav7_05.data.online.models.safeCreatedAtMillis
 
@@ -77,7 +77,7 @@ fun OnlineOrderTableRow(
 
         // Time
         Text(
-            text = formatPosTime(order.createdAtMillis()),
+            text = formatPosTime(order.createdAtMillis),
             modifier = Modifier.weight(0.20f),
             style = MaterialTheme.typography.bodySmall
         )

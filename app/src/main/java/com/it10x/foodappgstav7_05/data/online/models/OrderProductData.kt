@@ -1,9 +1,11 @@
 package com.it10x.foodappgstav7_05.data.online.models
 
 data class OrderProductData(
+
     val id: String = "",
     val orderMasterId: String = "",
-    val categoryName: String,
+
+    val categoryName: String = "",
     val name: String = "",
     val quantity: Int = 0,
 
@@ -17,8 +19,8 @@ data class OrderProductData(
     val finalTotal: Any? = null,
 
     val productCat: String = "",
-    val note: String?,
-    val modifiersJson: String?,
+    val note: String? = null,
+    val modifiersJson: String? = null
 
 ) {
     fun priceDouble() = price.toDoubleSafe()

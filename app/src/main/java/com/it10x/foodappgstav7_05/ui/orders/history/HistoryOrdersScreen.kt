@@ -14,10 +14,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.it10x.foodappgstav7_05.data.online.models.OrderMasterData
-import com.it10x.foodappgstav7_05.data.online.models.createdAtMillis
 import com.it10x.foodappgstav7_05.printer.PrinterManager
-import com.it10x.foodappgstav7_05.ui.orders.online.OnlineOrderDetailScreen
 import com.it10x.foodappgstav7_05.viewmodel.OnlineOrdersViewModel
 import com.it10x.foodappgstav7_05.viewmodel.RealtimeOrdersViewModel
 import java.text.SimpleDateFormat
@@ -28,29 +27,29 @@ import java.util.*
 fun HistoryOrdersScreen(
     printerManager: PrinterManager,
     ordersViewModel: OnlineOrdersViewModel,
-    realtimeOrdersViewModel: RealtimeOrdersViewModel
+    realtimeOrdersViewModel: RealtimeOrdersViewModel,
+    navController: NavController
 ) {
 
     var selectedOrder by remember { mutableStateOf<OrderMasterData?>(null) }
-    var selectedDate by remember { mutableStateOf<Long?>(null) }
+
+    var startDate by remember { mutableStateOf<Long?>(null) }
+    var endDate by remember { mutableStateOf<Long?>(null) }
+
     var showDatePicker by remember { mutableStateOf(false) }
+    var pickingStartDate by remember { mutableStateOf(true) }
 
     val dateFormatter = remember {
         SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
     }
-
-
 
     LaunchedEffect(Unit) {
         ordersViewModel.loadPosHistoryFirstPage()
     }
 
     val pagedOrders by ordersViewModel.orders.collectAsState()
-
     val loading by ordersViewModel.loading.collectAsState()
     val pageIndex by ordersViewModel.pageIndex.collectAsState()
-
-
 
     Column(
         modifier = Modifier
@@ -74,44 +73,71 @@ fun HistoryOrdersScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 10.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
 
             OutlinedButton(
-                onClick = { showDatePicker = true }
+                onClick = {
+                    pickingStartDate = true
+                    showDatePicker = true
+                }
             ) {
                 Text(
-                    selectedDate?.let { dateFormatter.format(Date(it)) }
-                        ?: "Select Date"
+                    startDate?.let { dateFormatter.format(Date(it)) }
+                        ?: "Start Date"
                 )
             }
 
-            Button(
-                enabled = selectedDate != null,
+            Spacer(Modifier.width(8.dp))
+
+            OutlinedButton(
                 onClick = {
+                    pickingStartDate = false
+                    showDatePicker = true
+                }
+            ) {
+                Text(
+                    endDate?.let { dateFormatter.format(Date(it)) }
+                        ?: "End Date"
+                )
+            }
 
-                    selectedDate?.let { date ->
+            Spacer(Modifier.width(8.dp))
 
-                        val (start, end) = ordersViewModel.buildDayRange(date)
-
-                        ordersViewModel.searchPOSOrdersByDate(
-                            startMillis = start,
-                            endMillis = end
-                        )
-                    }
+            Button(
+                enabled = startDate != null && endDate != null,
+                onClick = {
+                    ordersViewModel.searchPOSOrdersByDate(
+                        startMillis = startDate!!,
+                        endMillis = endDate!!
+                    )
                 }
             ) {
                 Text("Search")
             }
 
+            Spacer(Modifier.width(8.dp))
+
             OutlinedButton(
                 onClick = {
-                    selectedDate = null
+                    startDate = null
+                    endDate = null
                     ordersViewModel.loadPosHistoryFirstPage()
                 }
             ) {
                 Text("Reset")
+            }
+
+            // 🔹 Push next button to extreme right
+            Spacer(modifier = Modifier.weight(1f))
+
+            // 🔹 Back to Local Orders button
+            Button(
+                onClick = {
+                    navController.navigate("local_orders")
+                }
+            ) {
+                Text("Local Orders")
             }
         }
 
@@ -135,13 +161,11 @@ fun HistoryOrdersScreen(
 
                         HistoryOrderTableRow(
                             order = order,
-                            onOrderClick = { selectedOrder = order },
-                            onPrintBill = {
-                               // ordersViewModel.printOrder(order, "bill")
+                            onOrderClick = {
+                                navController.navigate("history_order_items/${order.id}")
                             },
-                            onPrintKitchen = {
-                             //   ordersViewModel.printOrder(order, "kitchen")
-                            }
+                            onPrintBill = { },
+                            onPrintKitchen = { }
                         )
                     }
                 }
@@ -190,21 +214,44 @@ fun HistoryOrdersScreen(
 
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
+
             confirmButton = {
+
                 TextButton(
                     onClick = {
-                        selectedDate = datePickerState.selectedDateMillis
+
+                        val selected = datePickerState.selectedDateMillis
+
+                        if (selected != null) {
+
+                            if (pickingStartDate) {
+                                startDate = selected
+                            } else {
+                                endDate = selected
+                            }
+
+                        }
+
                         showDatePicker = false
                     }
                 ) { Text("OK") }
+
             },
+
             dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) {
+
+                TextButton(
+                    onClick = { showDatePicker = false }
+                ) {
                     Text("Cancel")
                 }
+
             }
+
         ) {
+
             DatePicker(state = datePickerState)
+
         }
     }
 }
@@ -220,7 +267,7 @@ fun HistoryOrderTableHeader() {
     ) {
 
         HeaderCell("Order#", 0.14f)
-        HeaderCell("Type", 0.18f)
+        HeaderCell("Table/Pack", 0.18f)
         HeaderCell("Amount", 0.16f)
         HeaderCell("Time", 0.16f)
         HeaderCell("Bill Kitchen", 0.16f)
@@ -229,6 +276,7 @@ fun HistoryOrderTableHeader() {
 
 @Composable
 private fun RowScope.HeaderCell(text: String, weight: Float) {
+
     Text(
         text = text,
         modifier = Modifier.weight(weight),
@@ -256,7 +304,7 @@ fun HistoryOrderTableRow(
         Text("#${order.srno}", modifier = Modifier.weight(0.12f))
 
         Text(
-            order.orderType ?: "ONLINE",
+            order.tableNo ?: "ONLINE",
             modifier = Modifier.weight(0.16f)
         )
 
@@ -267,7 +315,7 @@ fun HistoryOrderTableRow(
         )
 
         Text(
-            formatHistoryTime(order.createdAtMillis()),
+            formatHistoryTime(order.createdAtMillis),
             modifier = Modifier.weight(0.12f),
             style = MaterialTheme.typography.bodySmall
         )
@@ -278,6 +326,7 @@ fun HistoryOrderTableRow(
         ) {
 
             IconButton(onClick = onPrintBill) {
+
                 Icon(
                     imageVector = Icons.Filled.Print,
                     contentDescription = "Print Bill",
@@ -286,6 +335,7 @@ fun HistoryOrderTableRow(
             }
 
             IconButton(onClick = onPrintKitchen) {
+
                 Icon(
                     imageVector = Icons.Filled.Print,
                     contentDescription = "Print Kitchen",
@@ -299,6 +349,8 @@ fun HistoryOrderTableRow(
 }
 
 private fun formatHistoryTime(millis: Long): String {
+
     val sdf = SimpleDateFormat("hh:mm a", Locale.getDefault())
     return sdf.format(Date(millis))
 }
+

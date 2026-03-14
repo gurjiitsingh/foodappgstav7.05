@@ -11,6 +11,10 @@ import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import java.sql.Timestamp
 
+import java.util.Date
+import java.text.SimpleDateFormat
+import java.util.Locale
+import java.util.Calendar
 class PosOrderSyncRepository(
     private val orderMasterDao: OrderMasterDao,
     private val orderProductDao: OrderProductDao,
@@ -35,102 +39,87 @@ class PosOrderSyncRepository(
 
         val batch = firestore.batch()
 
-        // 🔹 For every pending order
         pendingOrders.forEach { order ->
 
             val orderRef = firestore.collection("orderMaster").document(order.id)
             val orderItems = orderProductDao.getByOrderIdSync(order.id)
 
-            // 🧩 DEBUG LOGGING — Before adding to batch
-            Log.d("ORDER_SYNC", "Uploading order ${order.srno} (${order.id}) with ${orderItems.size} items")
-            Log.d(
-                "ORDER_SYNC", """
-orderType = ${order.orderType}
-tableNo   = ${order.tableNo}
-itemTotal = ${order.itemTotal}
-taxTotal  = ${order.taxTotal}
-discount  = ${order.discountTotal}
-grandTotal= ${order.grandTotal}
-""".trimIndent()
+            val now = order.createdAt
+            val createdTimestamp = com.google.firebase.Timestamp(
+                now / 1000,
+                ((now % 1000) * 1_000_000).toInt()
             )
-
-            orderItems.forEachIndexed { i, item ->
-                Log.d(
-                    "ORDER_SYNC_ITEM", """
-Order: ${order.srno} | Item[$i]
-name=${item.name}
-qty=${item.quantity}
-price=${item.basePrice}
-finalTotal=${item.finalTotal}
-""".trimIndent()
-                )
-            }
+            val date = Date(now)
+            val orderDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(date)
+            val orderMonth = SimpleDateFormat("yyyy-MM", Locale.getDefault()).format(date)
+            val orderYear = Calendar.getInstance().apply { time = date }.get(Calendar.YEAR)
 
             // -------- ORDER MASTER --------
-            batch.set(
-                orderRef,
-                mapOf(
-                    "id" to order.id,
-                    "srno" to order.srno,
-                    "ownerId" to ownerId,
-                    "outletId" to outletId,
-                    "orderType" to order.orderType,
-                    "tableNo" to order.tableNo,
-                    "itemTotal" to order.itemTotal,
-                    "taxTotal" to order.taxTotal,
-                    "discountTotal" to order.discountTotal,
-                    "grandTotal" to order.grandTotal,
-                    "paymentType" to order.paymentMode,
-                    "paymentStatus" to order.paymentStatus,
-                    "orderStatus" to order.orderStatus,
-                    "source" to "POS",
-                    "createdAt" to com.google.firebase.Timestamp(
-                        order.createdAt / 1000,
-                        ((order.createdAt % 1000) * 1_000_000).toInt()
-                    ),
-                    "syncStatus" to "SYNCED"
-                )
-            )
+            batch.set(orderRef, mapOf(
+                "id" to order.id,
+                "srno" to order.srno,
+                "ownerId" to ownerId,
+                "outletId" to outletId,
+                "orderType" to order.orderType,
+                "tableNo" to order.tableNo,
+                "itemTotal" to order.itemTotal,
+                "taxTotal" to order.taxTotal,
+                "discountTotal" to order.discountTotal,
+                "grandTotal" to order.grandTotal,
+                "paymentType" to order.paymentMode,
+                "paymentStatus" to order.paymentStatus,
+                "orderStatus" to order.orderStatus,
+                "source" to "POS",
+                "createdAt" to createdTimestamp,
+                "createdAtMillis" to now,
+                "orderDate" to orderDate,
+                "orderMonth" to orderMonth,
+                "orderYear" to orderYear,
+                "syncStatus" to "SYNCED"
+            ))
 
             // -------- ORDER ITEMS --------
             orderItems.forEach { item ->
                 val itemRef = firestore.collection("orderProducts").document(item.id)
-                batch.set(
-                    itemRef,
-                    mapOf(
-                        "id" to item.id,
-                        "orderMasterId" to order.id,
-                        "name" to item.name,
-                        "categoryId" to item.categoryId,
-                        "quantity" to item.quantity,
-                        "basePrice" to item.basePrice,
-                        "itemSubtotal" to item.itemSubtotal,
-                        "taxRate" to item.taxRate,
-                        "taxType" to item.taxType,
-                        "taxAmount" to item.taxAmountPerItem,
-                        "taxTotal" to item.taxTotal,
-                        "finalPrice" to item.finalPricePerItem,
-                        "finalTotal" to item.finalTotal,
-                        "createdAt" to com.google.firebase.Timestamp(
-                            item.createdAt / 1000,
-                            ((item.createdAt % 1000) * 1_000_000).toInt()
-                        )
-                    )
-                )
+
+                val itemDate = Date(item.createdAt)
+                val itemOrderDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(itemDate)
+                val itemOrderMonth = SimpleDateFormat("yyyy-MM", Locale.getDefault()).format(itemDate)
+
+                batch.set(itemRef, mapOf(
+                    "id" to item.id,
+                    "orderMasterId" to order.id,
+                    "name" to item.name,
+                    "categoryId" to item.categoryId,
+                    "quantity" to item.quantity,
+                    "basePrice" to item.basePrice,
+                    "itemSubtotal" to item.itemSubtotal,
+                    "taxRate" to item.taxRate,
+                    "taxType" to item.taxType,
+                    "taxAmount" to item.taxAmountPerItem,
+                    "taxTotal" to item.taxTotal,
+                    "finalPrice" to item.finalPricePerItem,
+                    "finalTotal" to item.finalTotal,
+                    "createdAt" to com.google.firebase.Timestamp(
+                        item.createdAt / 1000,
+                        ((item.createdAt % 1000) * 1_000_000).toInt()
+                    ),
+                    "orderDate" to itemOrderDate,
+                    "orderMonth" to itemOrderMonth
+                ))
             }
         }
 
         try {
-            batch.commit().await() // ✅ Wait until Firestore finishes
+            batch.commit().await()
             Log.d("ORDER_SYNC", "Batch sync success (${pendingOrders.size} orders)")
 
-            // ✅ Mark as synced only after success
             orderMasterDao.markOrdersSynced(
                 ids = pendingOrders.map { it.id },
                 time = System.currentTimeMillis()
             )
         } catch (e: Exception) {
-            Log.e("ORDER_SYNC", "❌ Batch sync failed: ${e.message}", e)
+            Log.e("ORDER_SYNC", "Batch sync failed: ${e.message}", e)
             throw e
         }
     }
