@@ -156,34 +156,33 @@ class PosTableViewModel(app: Application) : AndroidViewModel(app) {
     }
 
 
-
-    fun observeTablesByArea(area: String) {
+    fun transferTable(oldTableId: String, newTableId: String) {
         viewModelScope.launch {
 
-            dao.observeTablesByArea(area).collect { tableList ->
+            // move KOT items
+            kotRepository.transferTable(oldTableId, newTableId)
 
-                val uiList = tableList.map { table ->
+            // refresh table counters
+            cartRepository.syncCartCount(oldTableId)
+            cartRepository.syncCartCount(newTableId)
 
-                    val isBilled = table.billCount > 0 || table.kitchenCount > 0
+            kotRepository.syncKinchenCount(oldTableId)
+            kotRepository.syncKinchenCount(newTableId)
 
-                    val color = when {
-                        table.billCount > 0 -> TableColor.RED
-                        table.kitchenCount > 0 -> TableColor.GREEN
-                        table.cartCount > 0 -> TableColor.BLUE
-                        else -> TableColor.GRAY
-                    }
-
-                    TableUiState(
-                        table = table,
-                        color = color,
-                        isBilled = isBilled
-                    )
-                }
-
-                _tables.emit(uiList)
-            }
+            kotRepository.syncBillCount(oldTableId)
+            kotRepository.syncBillCount(newTableId)
         }
     }
+
+
+//    fun transferTable(oldTable: String, newTable: String) {
+//        viewModelScope.launch {
+//            kotItemDao.transferTable(oldTable, newTable)
+//            repository.finalizeTableAfterTransfer(oldTable, newTable)
+//            // sendEvent("Table moved to $newTable")
+//        }
+//    }
+
 
 
 }

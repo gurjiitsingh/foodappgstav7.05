@@ -46,6 +46,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.update
 import com.it10x.foodappgstav7_05.data.pos.manager.TableSyncManager
 import com.it10x.foodappgstav7_05.utils.MoneyUtils
+import kotlin.math.pow
 import kotlin.math.roundToLong
 
 class BillViewModel(
@@ -279,12 +280,12 @@ class BillViewModel(
     ) {
         Log.d("PAY_DEBUG", "----------- PAYMENT INPUTS -----------")
 
-        payments.forEach {
-            Log.d(
-                "PAY_DEBUG",
-                "Mode: ${it.mode} | Amount: ${it.amount} | Paise: ${MoneyUtils.toPaise(it.amount)}"
-            )
-        }
+//        payments.forEach {
+//            Log.d(
+//                "PAY_DEBUG",
+//                "Mode: ${it.mode} | Amount: ${it.amount} | Paise: ${MoneyUtils.toPaise(it.amount)}"
+//            )
+//        }
         if (_isProcessing.value) {
             sendEvent("Payment already in progress")
             return
@@ -367,11 +368,11 @@ class BillViewModel(
                 val grandTotalPaise =
                     itemSubtotalPaise - safeDiscountPaise + taxTotalPaise
 
-                Log.d("PAY_DEBUG", "----------- BILL TOTALS -----------")
-                Log.d("PAY_DEBUG", "ItemSubtotalPaise: $itemSubtotalPaise")
-                Log.d("PAY_DEBUG", "TaxTotalPaise: $taxTotalPaise")
-                Log.d("PAY_DEBUG", "DiscountPaise: $safeDiscountPaise")
-                Log.d("PAY_DEBUG", "GrandTotalPaise: $grandTotalPaise")
+//                Log.d("PAY_DEBUG", "----------- BILL TOTALS -----------")
+//                Log.d("PAY_DEBUG", "ItemSubtotalPaise: $itemSubtotalPaise")
+//                Log.d("PAY_DEBUG", "TaxTotalPaise: $taxTotalPaise")
+//                Log.d("PAY_DEBUG", "DiscountPaise: $safeDiscountPaise")
+//                Log.d("PAY_DEBUG", "GrandTotalPaise: $grandTotalPaise")
 
             // ===========================
             // PAYMENT CALCULATION
@@ -402,11 +403,11 @@ class BillViewModel(
                 val waiterPending = payments
                     .filter { it.mode == "WAITER_PENDING" }
                     .sumOf { it.amount }
-                Log.d("PAY_DEBUG", "----------- PAYMENT BREAKDOWN -----------")
-                Log.d("PAY_DEBUG", "TotalPaidPaise: $totalPaidPaise")
-                Log.d("PAY_DEBUG", "TotalCredit: $totalCredit")
-                Log.d("PAY_DEBUG", "DeliveryPending: $deliveryPending")
-                Log.d("PAY_DEBUG", "WaiterPending: $waiterPending")
+//                Log.d("PAY_DEBUG", "----------- PAYMENT BREAKDOWN -----------")
+//                Log.d("PAY_DEBUG", "TotalPaidPaise: $totalPaidPaise")
+//                Log.d("PAY_DEBUG", "TotalCredit: $totalCredit")
+//                Log.d("PAY_DEBUG", "DeliveryPending: $deliveryPending")
+//                Log.d("PAY_DEBUG", "WaiterPending: $waiterPending")
 
 
                 val paidAmountPaise = when {
@@ -449,27 +450,12 @@ class BillViewModel(
                     else -> "PAID"
                 }
 
-                Log.d("PAY_DEBUG", "----------- FINAL CALCULATION -----------")
-                Log.d("PAY_DEBUG", "PaidAmountPaise: $paidAmountPaise")
-                Log.d("PAY_DEBUG", "DuePaise: $duePaise")
-                Log.d("PAY_DEBUG", "AdjustedDue: $adjustedDue")
-                Log.d("PAY_DEBUG", "PaymentStatus: paymentStatus")
 
-                Log.d("PAY_DEBUG", "---- PAY BILL START ----: $paymentStatus")
             // ===========================
             // PHONE VALIDATION
             // ===========================
 
 
-//val hasCredit = payments.any { it.mode == "CREDIT" }
-//
-//                if (hasCredit &&
-//                    (paymentStatus == "CREDIT" || paymentStatus == "PARTIAL") &&
-//                    inputPhone.isBlank()
-//                ) {
-//                    sendEvent("Phone required for credit sale")
-//                    return@launch
-//                }
                 val isCashOnly = payments.all { it.mode == "CASH" }
 
                 if (!isCashOnly &&
@@ -480,11 +466,6 @@ class BillViewModel(
                     return@launch
                 }
 
-                Log.d("PAY_DEBUG", "----------- ORDER SAVE -----------")
-                Log.d("PAY_DEBUG", "PaidAmount: ${MoneyUtils.fromPaise(paidAmountPaise)}")
-                Log.d("PAY_DEBUG", "DueAmount: ${MoneyUtils.fromPaise(adjustedDue)}")
-              //  Log.d("PAY_DEBUG", "PaymentMode: $Paymens")
-                Log.d("PAY_DEBUG", "PaymentStatus: $paymentStatus")
 
             // ===========================
 // ENSURE CUSTOMER EXISTS (IF PHONE ENTERED)
@@ -630,10 +611,16 @@ class BillViewModel(
 
                         val taxPerItem =
                             if (first.taxType == "exclusive")
-                                first.basePrice * (first.taxRate / 100)
+                                (first.basePrice * (first.taxRate / 100)).round(3)
                             else 0.0
 
-                        val taxTotalItem = taxPerItem * quantity
+                        val taxTotalItem = (taxPerItem * quantity).round(3)
+
+                        val finalPricePerItem = (first.basePrice + taxPerItem).round(2)
+
+                        val finalTotal = (subtotal + taxTotalItem).round(2)
+
+
 
                          PosOrderItemEntity(
                             id = UUID.randomUUID().toString(),
@@ -669,8 +656,8 @@ class BillViewModel(
                             note = first.note,
                             modifiersJson = first.modifiersJson,
 
-                            finalPricePerItem = first.basePrice + taxPerItem,
-                            finalTotal = subtotal + taxTotalItem,
+                            finalPricePerItem = finalPricePerItem,
+                            finalTotal = finalTotal,
 
                             createdAt = now
                         )
@@ -736,7 +723,10 @@ class BillViewModel(
 //        }
 //    }
 
-
+    fun Double.round(decimals: Int): Double {
+        val factor = 10.0.pow(decimals)
+        return kotlin.math.round(this * factor) / factor
+    }
     fun deleteItem(itemId: String) {
         viewModelScope.launch {
             try {

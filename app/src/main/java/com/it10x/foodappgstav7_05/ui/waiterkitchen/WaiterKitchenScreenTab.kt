@@ -143,7 +143,7 @@ fun WaiterKitchenScreenTab(
                             tableNo = tableNo,
                             deviceId = deviceId,
                             deviceName = Build.MODEL ?: "Unknown Device",
-
+                            role = "WAITERPOS",
                             )
                     }
                 ) {

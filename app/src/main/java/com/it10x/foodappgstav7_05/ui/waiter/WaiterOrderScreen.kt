@@ -54,15 +54,14 @@ import androidx.compose.ui.graphics.Shape
 import com.google.firebase.firestore.FirebaseFirestore
 import com.it10x.foodappgstav7_05.com.it10x.foodappgstav7_05.ui.Waiterbill.WaiterBillDialog
 import com.it10x.foodappgstav7_05.com.it10x.foodappgstav7_05.ui.Waiterbill.WaiterBillDialogPhone
-import com.it10x.foodappgstav7_05.com.it10x.foodappgstav7_05.ui.tables.FloatingCartButton
-import com.it10x.foodappgstav7_05.com.it10x.foodappgstav7_05.ui.tables.OrderChip
-import com.it10x.foodappgstav7_05.com.it10x.foodappgstav7_05.ui.tables.PosOrderTypeButton
+
+
+
 import com.it10x.foodappgstav7_05.data.pos.repository.WaiterKitchenRepository
 
 import com.it10x.foodappgstav7_05.data.pos.viewmodel.ProductsLocalViewModel
 import com.it10x.foodappgstav7_05.data.pos.viewmodel.ProductsLocalViewModelFactory
-import com.it10x.foodappgstav7_05.ui.components.PosTouchKeyboard
-import com.it10x.foodappgstav7_05.ui.components.PosTouchKeyboardAdv
+
 import com.it10x.foodappgstav7_05.ui.components.PosTouchKeyboardCompact
 import com.it10x.foodappgstav7_05.ui.components.TouchKeyboardPhone
 import com.it10x.foodappgstav7_05.ui.pos.CategorySelectorDialog

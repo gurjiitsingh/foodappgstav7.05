@@ -246,12 +246,13 @@ class MainActivity : ComponentActivity() {
 //                    kitchenViewModel = kitchenVM,
 //
 //                )
+
                 val globalOrderSyncManager = remember {
                     GlobalOrderSyncManager(
-                                            firestore = firestore,
-
+                    firestore = firestore,
                     processedDao,
                     kitchenViewModel = kitchenVM,
+                        role = role ?: PosRole.MAIN
                     )
                 }
 

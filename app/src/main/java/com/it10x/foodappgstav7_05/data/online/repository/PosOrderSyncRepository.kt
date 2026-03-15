@@ -1,7 +1,6 @@
 package com.it10x.foodappgstav7_05.data.online.models.repository
 
 import android.util.Log
-import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.it10x.foodappgstav7_05.data.pos.dao.OrderMasterDao
 import com.it10x.foodappgstav7_05.data.pos.dao.OrderProductDao
@@ -9,8 +8,6 @@ import com.it10x.foodappgstav7_05.data.pos.dao.OutletDao
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
-import java.sql.Timestamp
-
 import java.util.Date
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -81,16 +78,45 @@ class PosOrderSyncRepository(
             // -------- ORDER ITEMS --------
             orderItems.forEach { item ->
                 val itemRef = firestore.collection("orderProducts").document(item.id)
-
                 val itemDate = Date(item.createdAt)
                 val itemOrderDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(itemDate)
                 val itemOrderMonth = SimpleDateFormat("yyyy-MM", Locale.getDefault()).format(itemDate)
-
                 batch.set(itemRef, mapOf(
                     "id" to item.id,
                     "orderMasterId" to order.id,
                     "name" to item.name,
                     "categoryId" to item.categoryId,
+                    "categoryName" to item.categoryName,
+                    "quantity" to item.quantity,
+                    "basePrice" to item.basePrice,
+                    "itemSubtotal" to item.itemSubtotal,
+                    "taxRate" to item.taxRate,
+                    "taxType" to item.taxType,
+                    "taxAmount" to item.taxAmountPerItem,
+                    "taxTotal" to item.taxTotal,
+                    "finalPrice" to item.finalPricePerItem,
+                    "finalTotal" to item.finalTotal,
+                    "createdAt" to com.google.firebase.Timestamp(
+                        item.createdAt / 1000,
+                        ((item.createdAt % 1000) * 1_000_000).toInt()
+                    ),
+                    "orderDate" to itemOrderDate,
+                    "orderMonth" to itemOrderMonth
+                ))
+            }
+
+
+            orderItems.forEach { item ->
+                val itemRef = firestore.collection("orderItems").document(item.id)
+                val itemDate = Date(item.createdAt)
+                val itemOrderDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(itemDate)
+                val itemOrderMonth = SimpleDateFormat("yyyy-MM", Locale.getDefault()).format(itemDate)
+                batch.set(itemRef, mapOf(
+                    "id" to item.id,
+                    "orderMasterId" to order.id,
+                    "name" to item.name,
+                    "categoryId" to item.categoryId,
+                    "categoryName" to item.categoryName,
                     "quantity" to item.quantity,
                     "basePrice" to item.basePrice,
                     "itemSubtotal" to item.itemSubtotal,

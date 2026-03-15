@@ -128,6 +128,11 @@ class CartViewModel(
                     ?: category?.kitchenPrintReq
                     ?: true
 
+//            Log.d(
+//                "ORDER_ITEM_DEBUG",
+//                "productId=${product.id}, categoryId=${product.categoryId}, categoryName=${category}, name=${product.name}"
+//            )
+
             val cartItem = PosCartEntity(
                 productId = product.id,
                 name = toTitleCase(product.name),
@@ -145,6 +150,8 @@ class CartViewModel(
                 sessionId = sessionId.value!!,
                 tableId = currentTableId.value
             )
+
+
 
             repository.addToCart(cartItem, currentTableId.value!!)
          //   repository.syncCartCount(currentTableId.value!!)

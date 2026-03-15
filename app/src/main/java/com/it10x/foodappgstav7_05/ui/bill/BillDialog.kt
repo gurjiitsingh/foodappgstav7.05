@@ -23,8 +23,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.it10x.foodappgstav7_05.ui.bill.BillViewModel
-import com.it10x.foodappgstav7_05.ui.bill.BillViewModelFactory
 import com.it10x.foodappgstav7_05.ui.payment.PaymentInput
 import com.it10x.foodappgstav7_05.ui.components.NumPad
 import java.util.Locale
@@ -584,17 +582,6 @@ fun BillDialog(
                                     return@Button
                                 }
 
-//                                if (remainingAmount > 0) {
-//                                    billViewModel.payBill(
-//                                        payments = listOf(
-//                                            PaymentInput("DELIVERY_PENDING", remainingAmount)
-//                                        ),
-//                                        name = "Customer",
-//                                        phone = uiState.value.customerPhone
-//                                    )
-//
-//                                    usedPaymentModes.add("PENDING")
-//                                }
 
                                 billViewModel.payBill(
                                     payments = listOf(

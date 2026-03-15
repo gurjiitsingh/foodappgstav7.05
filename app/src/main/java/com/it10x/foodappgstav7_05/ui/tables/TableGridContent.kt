@@ -27,7 +27,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.PointOfSale
+import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
@@ -39,7 +41,8 @@ fun TableGridContent(
     tables: List<PosTableViewModel.TableUiState>,
     selectedTable: String?,
     navController: NavController,
-    onTableSelected: (String) -> Unit
+    onTableSelected: (String) -> Unit,
+    onTransferClick: (String) -> Unit
 ) {
 
     val groupedByArea = tables
@@ -47,10 +50,10 @@ fun TableGridContent(
         .toSortedMap()
 
     LazyVerticalGrid(
-        columns = GridCells.Adaptive(minSize = 85.dp),
+        columns = GridCells.Adaptive(minSize = 90.dp),
         modifier = Modifier
             .fillMaxSize()
-            .padding(6.dp),
+            .padding(3.dp),
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
@@ -84,7 +87,7 @@ fun TableGridContent(
                         BorderStroke(2.dp, Color(0xFFFF9800))
                     else null,
                     modifier = Modifier
-                        .aspectRatio(.95f)
+                        .aspectRatio(.60f)
                         .clickable {
                             onTableSelected(table.id)
                         }
@@ -93,63 +96,126 @@ fun TableGridContent(
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(8.dp),
-                        verticalArrangement = Arrangement.SpaceBetween
+                            .padding(8.dp)
                     ) {
 
-                        // HEADER BUTTON
-                        Surface(
-                            shape = RoundedCornerShape(6.dp),
-                            border = BorderStroke(
-                                1.dp,
-                                MaterialTheme.colorScheme.primary
-                            ),
-                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.05f),
-                            modifier = Modifier.clickable {
-                                onTableSelected(table.id)
-                                navController.navigate("pos") {
-                                    launchSingleTop = true
-                                }
-                            }
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .padding(horizontal = 10.dp, vertical = 4.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = table.tableName,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                                Spacer(Modifier.width(6.dp))
-                                Icon(
-                                    imageVector = Icons.Default.PointOfSale,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                            }
-                        }
-
                         Column(
+                            modifier = Modifier.fillMaxWidth(),
                             verticalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
-                            if (ui.cartCount > 0) {
-                                StatusBadge(
-                                    icon = "🛒",
-                                    text = ui.cartCount.toString(),
-                                    bgColor = Color(0xFF1976D2).copy(alpha = 0.6f)
-                                )
+
+                            // OPEN POS BUTTON
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = Color(0xFFFF8C00),
+                                shadowElevation = 3.dp,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        onTableSelected(table.id)
+                                        navController.navigate("pos") {
+                                            launchSingleTop = true
+                                        }
+                                    }
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 8.dp, vertical = 6.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+
+                                    Icon(
+                                        imageVector = Icons.Default.PointOfSale,
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+
+                                    Spacer(Modifier.width(6.dp))
+
+                                    Text(
+                                        text = table.tableName,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White
+                                    )
+                                }
                             }
 
-                            if (ui.billDoneCount > 0) {
-                                StatusBadge(
-                                    icon = "🧾",
-                                    text = ui.billDoneCount.toString(),
-                                    bgColor = Color(0xFF2E7D32).copy(alpha = 0.6f)
-                                )
+                            // TRANSFER BUTTON
+                            Spacer(Modifier.width(8.dp))
+                            Surface(
+                                shape = RoundedCornerShape(6.dp),
+                                border = BorderStroke(
+                                    1.dp,
+                                    MaterialTheme.colorScheme.primary
+                                ),
+                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.05f),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        onTableSelected(table.id)
+                                        onTransferClick(table.id)
+                                    }
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 8.dp, vertical = 6.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+
+                                    Icon(
+                                        imageVector = Icons.Default.SwapHoriz,
+                                        contentDescription = "Transfer Table",
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+
+                                    Spacer(Modifier.width(6.dp))
+
+                                    Text(
+                                        text = table.tableName,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            }
+
+                            // CART BADGE SLOT
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(28.dp)
+                                    .padding(start = 2.dp),
+                                contentAlignment = Alignment.CenterStart
+                            ) {
+                                if (ui.cartCount > 0) {
+                                    StatusBadge(
+                                        icon = "🛒",
+                                        text = ui.cartCount.toString(),
+                                        bgColor = Color(0xFF1976D2).copy(alpha = 0.6f)
+                                    )
+                                }
+                            }
+
+                            // BILL BADGE SLOT
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(28.dp)
+                                    .padding(start = 2.dp),
+                                contentAlignment = Alignment.CenterStart
+                            ) {
+                                if (ui.billDoneCount > 0) {
+                                    StatusBadge(
+                                        icon = "🧾",
+                                        text = ui.billDoneCount.toString(),
+                                        bgColor = Color(0xFF2E7D32).copy(alpha = 0.6f)
+                                    )
+                                }
                             }
                         }
                     }
@@ -157,7 +223,10 @@ fun TableGridContent(
             }
         }
     }
+
 }
+
+
 
 
 

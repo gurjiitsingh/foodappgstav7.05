@@ -136,7 +136,8 @@ fun KitchenScreen(
                             paymentType = "UNPAID",
                             deviceId = deviceId,
                             deviceName = Build.MODEL ?: "Unknown Device",
-                            appVersion = "BuildConfig.VERSION_NAME"
+                            appVersion = "BuildConfig.VERSION_NAME",
+                            role = "MAINPOS"
                         )
                     }
                 ) {

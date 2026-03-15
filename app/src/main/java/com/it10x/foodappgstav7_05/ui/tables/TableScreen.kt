@@ -126,7 +126,8 @@ fun TableScreen(
         )
     }
 
-
+    var showTransferSelector by rememberSaveable { mutableStateOf(false) }
+    var transferFromTableId by rememberSaveable { mutableStateOf<String?>(null) }
 
 
     LaunchedEffect(Unit) {
@@ -232,6 +233,10 @@ fun TableScreen(
                         if (orderType == "DINE_IN") {
                             cartViewModel.initSession("DINE_IN", table.id)
                         }
+                    },
+                    onTransferClick = { tableId ->
+                        transferFromTableId = tableId
+                        showTransferSelector = true
                     }
                 )
 
@@ -283,19 +288,7 @@ fun TableScreen(
         }
 
 
-        // ---------- FLOATING KEYBOARD OVER PRODUCTS REMOVED----------
 
-        // ---------- MOBILE CART FAB ----------
-
-//        if (isPhone) {
-//            FloatingCartButton(
-//                count = cartCount,
-//                onClick = { showCartSheet = true },
-//                modifier = Modifier
-//                    .align(Alignment.BottomEnd)
-//                    .padding(16.dp)
-//            )
-//        }
     }
 
 
@@ -450,174 +443,69 @@ else{
     }
 
 
+
+
+
+    if (showTransferSelector && transferFromTableId != null) {
+
+        TableSelectorGrid(
+            tables = tables,
+            selectedTable = transferFromTableId,
+
+            onTableSelected = { newTableId ->
+
+                val oldTableId = transferFromTableId ?: return@TableSelectorGrid
+
+                if (newTableId == oldTableId) {
+                    showTransferSelector = false
+                    return@TableSelectorGrid
+                }
+
+                val newTable = tables.first { it.table.id == newTableId }.table
+
+                // 🔴 MOVE ORDER IN DATABASE
+                posTableViewModel.transferTable(oldTableId, newTableId)
+
+                // 🟢 UPDATE SESSION
+                posSessionViewModel.setTable(
+                    tableId = newTable.id,
+                    tableName = newTable.tableName
+                )
+
+                // 🟢 START SESSION FOR NEW TABLE
+                cartViewModel.initSession("DINE_IN", newTable.id)
+
+                Toast.makeText(
+                    context,
+                    "Order moved to ${newTable.tableName}",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+                showTransferSelector = false
+                transferFromTableId = null
+            },
+
+            onDismiss = {
+                showTransferSelector = false
+                transferFromTableId = null
+            }
+        )
+    }
+
+
+
 }
 
 // ================= CATEGORY BUTTON =================
 
-@Composable
-fun CategoryButton(
-    label: String,
-    selected: Boolean,
-    onClick: () -> Unit
-) {
-    Surface(
-        color = if (selected)
-            MaterialTheme.colorScheme.primary
-        else
-            MaterialTheme.colorScheme.surface,
-        shape = MaterialTheme.shapes.small,
-        shadowElevation = 2.dp,
-        border = if (!selected)
-            BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
-        else null,
-        modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight()
-            .clickable { onClick() }
-    ) {
-        Box(
-            modifier = Modifier
-                .padding(horizontal = 10.dp, vertical = 12.dp),
-            contentAlignment = Alignment.CenterStart
-        ) {
-            Text(
-                text = label,
-                color = if (selected)
-                    MaterialTheme.colorScheme.onPrimary
-                else
-                    MaterialTheme.colorScheme.onSurface,
-                minLines = 3,
-                maxLines = 3,
-                overflow = TextOverflow.Ellipsis,
-                fontSize = 11.sp,
-                style = MaterialTheme.typography.bodyMedium
-            )
-        }
-    }
-}
-
-
-
-
-@Composable
-fun FloatingCartButton(
-    count: Int,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    height: Dp = 52.dp,
-    shape: Shape = RoundedCornerShape(8.dp)
-) {
-    Box(
-        modifier = modifier.size(height)
-    ) {
-
-        IconButton(
-            onClick = onClick,
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    MaterialTheme.colorScheme.primary,
-                    shape = shape
-                )
-        ) {
-            Icon(
-                imageVector = Icons.Default.ShoppingCart,
-                contentDescription = "Cart",
-                tint = MaterialTheme.colorScheme.onPrimary
-            )
-        }
-
-        if (count > 0) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .offset(x = 6.dp, y = (-6).dp)
-                    .size(20.dp)
-                    .background(Color.Red, shape = CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = count.toString(),
-                    color = Color.White,
-                    style = MaterialTheme.typography.labelSmall
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun OrderChip(
-    label: String,
-    selected: Boolean,
-    onClick: () -> Unit,
-    shape: Shape = MaterialTheme.shapes.small,
-    height: Dp = 52.dp
-) {
-    Surface(
-        color = if (selected)
-            MaterialTheme.colorScheme.primary
-        else
-            MaterialTheme.colorScheme.surface,
-        shape = shape,
-        tonalElevation = 2.dp,
-        modifier = Modifier
-            .height(height)
-            .clickable { onClick() }
-    ) {
-        Box(
-            modifier = Modifier
-                .padding(horizontal = 10.dp)
-                .fillMaxHeight(),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = label,
-                color = if (selected)
-                    MaterialTheme.colorScheme.onPrimary
-                else
-                    MaterialTheme.colorScheme.onSurface,
-                style = MaterialTheme.typography.bodyMedium
-            )
-        }
-    }
-}
 
 
 
 
 
-@Composable
-fun PosOrderTypeButton(
-    label: String,
-    selected: Boolean,
-    onClick: () -> Unit,
-    shape: Shape = RoundedCornerShape(5.dp),   // ✅ add this
-    height: Dp = 52.dp                         // ✅ add this
-) {
-    Button(
-        onClick = onClick,
-        modifier = Modifier.height(height),
-        shape = shape,
-        colors = ButtonDefaults.buttonColors(
-            containerColor = if (selected)
-                MaterialTheme.colorScheme.primary
-            else
-                MaterialTheme.colorScheme.surfaceVariant
-        )
-    ) {
-        Text(label)
-    }
-}
 
-fun toTitleCase(text: String): String {
-    return text
-        .lowercase()
-        .split(" ")
-        .joinToString(" ") { word ->
-            word.replaceFirstChar { it.uppercase() }
-        }
-}
+
+
 
 
 

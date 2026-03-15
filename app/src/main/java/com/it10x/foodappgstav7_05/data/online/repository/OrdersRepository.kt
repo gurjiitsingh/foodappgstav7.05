@@ -6,6 +6,7 @@ import com.it10x.foodappgstav7_05.data.online.models.OrderProductData
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import com.it10x.foodappgstav7_05.data.online.models.CategorySaleData
 import kotlinx.coroutines.tasks.await
 import java.util.Date
 import com.it10x.foodappgstav7_05.utils.createdAtMillis
@@ -372,5 +373,54 @@ class OrdersRepository {
             emptyList()
         }
     }
+
+
+
+    suspend fun getCategorySalesByDate(
+        startMillis: Long,
+        endMillis: Long
+    ): List<CategorySaleData> {
+
+        return try {
+
+            val startTimestamp = com.google.firebase.Timestamp(Date(startMillis))
+            val endTimestamp = com.google.firebase.Timestamp(Date(endMillis))
+
+            val snapshot = db.collection("orderProducts")
+                .whereGreaterThanOrEqualTo("createdAt", startTimestamp)
+                .whereLessThanOrEqualTo("createdAt", endTimestamp)
+                .get()
+                .await()
+
+            val items = snapshot.documents.mapNotNull {
+                it.toObject(OrderProductData::class.java)
+            }
+
+            val grouped = items.groupBy { it.categoryName }
+
+            val result = grouped.map { (category, products) ->
+
+                val qty = products.sumOf { it.quantity }
+
+                val sales = products.sumOf { it.finalTotalDouble() }
+
+                CategorySaleData(
+                    categoryName = category,
+                    totalQty = qty,
+                    totalSales = sales
+                )
+            }
+
+            result.sortedByDescending { it.totalSales }
+
+        } catch (e: Exception) {
+
+            Log.e("CATEGORY_SALES", "Category sales fetch failed", e)
+            emptyList()
+        }
+    }
+
+
+
 
 }

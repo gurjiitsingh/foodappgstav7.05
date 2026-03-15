@@ -94,6 +94,7 @@ class WaiterKitchenViewModel(
         tableNo: String,
         deviceId: String,
         deviceName: String?,
+        role : String
     ) {
         if (isProcessing) return   // 🔥 Prevent duplicate presses
 
@@ -112,13 +113,13 @@ class WaiterKitchenViewModel(
                 return@launch
             }
 
-            Log.d("WaiterKitchenVM", "🚀 Send All triggered for table=$tableNo, total=${latestCart.size}")
-            latestCart.forEachIndexed { index, item ->
-                Log.d(
-                    "WaiterKitchenVM",
-                    "📦 [$index] name=${item.name}, qty=${item.quantity}, note='${item.note ?: ""}'"
-                )
-            }
+//            Log.d("WaiterKitchenVM", "🚀 Send All triggered for table=$tableNo, total=${latestCart.size}")
+//            latestCart.forEachIndexed { index, item ->
+//                             Log.d(
+//                "ORDER_ITEM_DEBUG",
+//                "productId=${item.id}, categoryId=${item.categoryId}, categoryName=${item.categoryName}, name=${item.name}"
+//            )
+//            }
 
             if (isProcessing) return@launch
             isProcessing = true
@@ -149,7 +150,8 @@ class WaiterKitchenViewModel(
                     cartItems = latestCart,
                     deviceId = deviceId,
                     deviceName = deviceName,
-                    appVersion = "appVersion"
+                    appVersion = "appVersion",
+                    role = role,
                 )
             //    Log.d("WaiterKitchenVM", " items=${latestCart.size}")
                 if (!billSaved) {
@@ -190,7 +192,8 @@ class WaiterKitchenViewModel(
         cartItems: List<PosCartEntity>,
         deviceId: String,
         deviceName: String?,
-        appVersion: String?
+        appVersion: String?,
+        role: String,
     ): Boolean = withContext(Dispatchers.IO) {
 
         val tableNo = tableNo?: "";
@@ -220,7 +223,17 @@ class WaiterKitchenViewModel(
 
             kotBatchDao.insert(batch)
 
+            Log.d("KOT_DEBUG", "--- WaiterKitchenViewmodel----")
+
+//            cartItems.forEach {
+//                Log.d(
+//                    "KOT_DEBUG",
+//                    "Item: ${it.name} qty=${it.quantity}"
+//                )
+//            }
+
             val items = cartItems.map { cart ->
+          //    Log.d("KOT_DEBUG", "Saving item: ${cart.name} qty=${cart.quantity}")
                 PosKotItemEntity(
                     id = UUID.randomUUID().toString(),
                     sessionId = sessionId,
@@ -244,7 +257,7 @@ class WaiterKitchenViewModel(
                 )
             }
 
-            kotRepository.insertItemsInBill(tableNo, items)
+            kotRepository.insertItemsInBill(tableNo, items,role)
 
 
                 kotRepository.markDoneAll(tableNo)
@@ -276,166 +289,14 @@ class WaiterKitchenViewModel(
 
 
 
-    fun sendSingleItemDirectlyToBill_Print_noPrint(
-        cart: PosCartEntity,
-        orderType: String,
-        tableNo: String,
-        sessionId: String,
-        print: Boolean
-    ) {
-
-        viewModelScope.launch(Dispatchers.IO) {
-
-            val db = AppDatabaseProvider.get(getApplication())
-            val kotBatchDao = db.kotBatchDao()
-            val kotItemDao = db.kotItemDao()
-
-            val now = System.currentTimeMillis()
-            val batchId = UUID.randomUUID().toString()
-
-            // 🔹 Create batch (required for consistency)
-            val batch = PosKotBatchEntity(
-                id = batchId,
-                sessionId = sessionId,
-                tableNo = tableNo ?: orderType,
-                orderType = orderType,
-                deviceId = "dummy",
-                deviceName = "dummy",
-                appVersion = "dummy",
-                createdAt = now,
-                sentBy = "dummy",
-                syncStatus = "DONE",
-                lastSyncedAt = null
-            )
-
-            kotBatchDao.insert(batch)
-
-            // 🔹 Create SINGLE KOT item → DONE
-            val kotItem = PosKotItemEntity(
-                id = UUID.randomUUID().toString(),
-                sessionId = sessionId,
-                kotBatchId = batchId,
-                tableNo = tableNo ?: orderType,
-                productId = cart.productId,
-                name = cart.name,
-                categoryId = cart.categoryId,
-                categoryName = cart.categoryName,
-                parentId = cart.parentId,
-                isVariant = cart.isVariant,
-                basePrice = cart.basePrice,
-                quantity = cart.quantity,
-                taxRate = cart.taxRate,
-                taxType = cart.taxType,
-                note = cart.note,
-                modifiersJson = cart.modifiersJson,
-                status = "DONE",
-                kitchenPrinted = false,
-                createdAt = now
-            )
-
-            kotItemDao.insert(kotItem)
-            Log.d("TABLE_DEBUG", "Cart to direct bill with print")
-
-            //kotItemDao.getPendingItems(tableNo)
-
-            // 🔹 Remove from cart after sending to bill
-            //    cartViewModel.removeFromCart(cart.productId, tableNo)
-            cartRepository.remove(cart.productId, tableNo)
-            cartRepository.syncCartCount(tableNo)
-            kotRepository.syncBillCount(tableNo)
-
-           // logAllKotItems()
-            // 🔹 Print if required
-            if (print) {
-                addItemToDebouncedKitchenPrint(kotItem, orderType)
-                }
-            kotItemDao.markPrinted(kotItem.id)
 
 
-
-        }
-    }
-
-    private fun addItemToDebouncedKitchenPrint(
-        item: PosKotItemEntity,
-        orderType: String
-    ) {
-        synchronized(this) {
-            pendingKotItems.add(item)
-            if (pendingBatchId == null) {
-                pendingBatchId = item.kotBatchId
-            }
-        }
-
-        // Cancel previous timer
-        kotPrintJob?.cancel()
-
-        // Start / restart 10s timer
-        kotPrintJob = viewModelScope.launch {
-            delay(5_000) // ⏱️ 10 seconds
-
-            val itemsToPrint: List<PosKotItemEntity>
-            val batchId: String?
-
-            synchronized(this@WaiterKitchenViewModel) {
-                itemsToPrint = pendingKotItems.toList()
-                batchId = pendingBatchId
-                pendingKotItems.clear()
-                pendingBatchId = null
-            }
-
-            if (itemsToPrint.isNotEmpty()) {
-                printerManager.printTextKitchen(
-                    PrinterRole.KITCHEN,
-                    sessionKey = itemsToPrint.first().tableNo ?: batchId!!,
-                    orderType = orderType,
-                    items = itemsToPrint
-                )
-
-                // mark all printed
-                val db = AppDatabaseProvider.get(getApplication())
-                db.kotItemDao().markPrintedBatch(itemsToPrint.map { it.id })
-            }
-        }
-    }
 
     fun resetSendSuccess() {
         _sendSuccess.value = false
     }
 
-//    fun closeTable(
-//        tableNo: String,
-//        paymentType: String,
-//        onSuccess: () -> Unit,
-//        onError: (String) -> Unit
-//    ) {
-//        viewModelScope.launch {
-//            try {
-//
-//                // 1️⃣ Take snapshot of bill items (NOT from mutable KOT table)
-//                val billingItems = _uiState.value.items
-//                if (billingItems.isEmpty()) {
-//                    onError("No items in bill")
-//                    return@launch
-//                }
-//
-//                // 2️⃣ Save bill to OrderMaster / OrderDetails
-//                saveOrder(billingItems, tableNo, paymentType)
-//
-//                // 3️⃣ Clear KOT items
-//                kotItemDao.deleteByTable(tableNo)
-//
-//                // 4️⃣ Clear UI state
-//                _uiState.value = _uiState.value.copy(items = emptyList())
-//
-//                // 5️⃣ Success → Go back
-//                onSuccess()
-//
-//            } catch (e: Exception) {
-//                onError("Error: ${e.message}")
-//            }
-//        }
-//    }
+
 
 
 }

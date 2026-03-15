@@ -13,18 +13,6 @@ interface KotItemDao {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
     // -------------------------
     // INSERT
     // -------------------------
@@ -384,4 +372,12 @@ WHERE tableNo = :tableNo
 
     @Query("SELECT COUNT(*) FROM pos_kot_items WHERE tableNo = :tableId AND status != 'SERVED'")
     suspend fun getKitchenCountForTable(tableId: String): Int?
+
+    @Query("""
+UPDATE pos_kot_items
+SET tableNo = :newTable
+WHERE tableNo = :oldTable
+""")
+    suspend fun transferTable(oldTable: String, newTable: String)
+
 }

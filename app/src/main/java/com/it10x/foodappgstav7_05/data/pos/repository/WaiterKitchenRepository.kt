@@ -57,11 +57,14 @@ class WaiterKitchenRepository(
                 val orderItem = WaiterOrderItem(
                     productId = cartItem.productId,
                     productName = cartItem.name,
+                    categoryId = cartItem.categoryId,
+                    categoryName = cartItem.categoryName,
                     quantity = cartItem.quantity,
                     price = cartItem.basePrice,
                     taxRate = cartItem.taxRate,
                     tableNo = tableNo,
                     note = cartItem.note,
+                    modifiersJson = cartItem.modifiersJson,
                     sessionId = sessionId,
                     kitchenPrintReq = cartItem.kitchenPrintReq,
                     kitchenPrinted = false

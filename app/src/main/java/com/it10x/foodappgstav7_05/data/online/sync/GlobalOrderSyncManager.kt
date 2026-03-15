@@ -4,6 +4,7 @@ import android.util.Log
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
+import com.it10x.foodappgstav7_05.core.PosRole
 import com.it10x.foodappgstav7_05.data.pos.KotProcessor
 import com.it10x.foodappgstav7_05.data.pos.dao.ProcessedCloudOrderDao
 import com.it10x.foodappgstav7_05.data.pos.entities.PosCartEntity
@@ -20,6 +21,7 @@ class GlobalOrderSyncManager(
     private val firestore: FirebaseFirestore,
     private val processedDao: ProcessedCloudOrderDao,
     private val kitchenViewModel : KitchenViewModel,
+    private val role: PosRole
 
 ) {
 
@@ -30,7 +32,13 @@ class GlobalOrderSyncManager(
 
 
     fun startListening() {
-        Log.d("KOT", "startListening called")
+       // Log.d("KOT", "startListening called")
+
+        // ❌ Waiter should not listen
+        if (role == PosRole.WAITER) {
+            Log.d("SYNC", "Firestore listener disabled for WAITER device")
+            return
+        }
         if (listener != null) return
 
         listener = firestore.collection("waiter_orders")
@@ -82,6 +90,11 @@ class GlobalOrderSyncManager(
                                 .await()
 
                             val cartList = itemsSnapshot.documents.map { itemDoc ->
+
+//             Log.d(
+//                "ORDER_ITEM_DEBUG",
+//                "productId=${itemDoc.id}, categoryId=${itemDoc.getString("categoryId")}, categoryName=${itemDoc.getString("categoryName")}, name=${itemDoc.getString("productName")}"
+//            )
                                 PosCartEntity(
                                     sessionId = sessionId,
                                     tableId = tableNo,
@@ -117,10 +130,11 @@ class GlobalOrderSyncManager(
                                 cartItems = cartList,
                                 deviceId = "WAITER",
                                 deviceName = "WAITER",
-                                appVersion = "WAITER"
+                                appVersion = "WAITER",
+                                role ="FIRESTORE"
                             )
 
-                            Log.d("SYNC", "Order processed successfully: $orderId")
+                        //    Log.d("SYNC", "Order processed successfully: $orderId")
 
                         } catch (e: Exception) {
                             Log.e("SYNC", "Error processing order: $orderId", e)

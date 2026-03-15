@@ -111,7 +111,8 @@ class KitchenViewModel(
         paymentType: String,
         deviceId: String,
         deviceName: String?,
-        appVersion: String?
+        appVersion: String?,
+        role: String,
     ) {
 //         Log.d(
 //             "ORDER_TYPE_TRACE",
@@ -150,7 +151,8 @@ class KitchenViewModel(
                     cartItems = cartList,
                     deviceId = deviceId,
                     deviceName = deviceName,
-                    appVersion = appVersion
+                    appVersion = appVersion,
+                    role = role,
                 )
 
                 if (!kotSaved) {
@@ -187,7 +189,8 @@ class KitchenViewModel(
         cartItems: List<PosCartEntity>,
         deviceId: String,
         deviceName: String?,
-        appVersion: String?
+        appVersion: String?,
+        role: String,
     ) {
       //  Log.d("KOT_TRACE", "Called from: ${Throwable().stackTrace[1]}")
 
@@ -206,7 +209,8 @@ class KitchenViewModel(
                 cartItems = cartItems,
                 deviceId = deviceId,
                 deviceName = deviceName,
-                appVersion = appVersion
+                appVersion = appVersion,
+                role = role,
             )
 
             if (!saved) {
@@ -231,7 +235,8 @@ class KitchenViewModel(
         cartItems: List<PosCartEntity>,
         deviceId: String,
         deviceName: String?,
-        appVersion: String?
+        appVersion: String?,
+        role: String,
     ): Boolean = withContext(Dispatchers.IO) {
       //  Log.d("KOT", "saveKotAndPrintKitchen Called from: ${Throwable().stackTrace[1]}")
         val tableNo = tableNo?: "";
@@ -287,7 +292,10 @@ class KitchenViewModel(
                 )
             }
 
-            kotRepository.insertItemsInBill(tableNo, items)
+
+
+            Log.d("KOT_DEBUG", "---- MainKitchenViewmodel----")
+            kotRepository.insertItemsInBill(tableNo, items, role)
             kotRepository.syncBillCount(tableId)
 
 
@@ -363,6 +371,12 @@ class KitchenViewModel(
 //            }
         }
     }
+
+
+
+
+
+
 
 
 }

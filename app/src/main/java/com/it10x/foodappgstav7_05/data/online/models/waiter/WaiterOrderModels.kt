@@ -15,12 +15,15 @@ data class WaiterOrder(
 data class WaiterOrderItem(
     val productId: String = "",
     val productName: String = "",
+    val categoryId: String = "",
+    val categoryName: String = "",
     val quantity: Int = 0,
     val price: Double = 0.0,
     val taxRate: Double = 0.0,
     val tableNo: String = "",
     val sessionId: String = "",
     val note : String = "",
+    val modifiersJson : String = "",
     val kitchenPrintReq: Boolean = true,
     val kitchenPrinted: Boolean = false
 )

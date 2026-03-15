@@ -162,7 +162,8 @@ fun WaiterKitchenScreenMob(
                         cartList = cartItems,
                         tableNo = tableNo,
                         deviceId = deviceId,
-                        deviceName = Build.MODEL ?: "Unknown Device"
+                        deviceName = Build.MODEL ?: "Unknown Device",
+                        role = "WAITER"
                     )
                 }
             ) {

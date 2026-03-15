@@ -18,6 +18,7 @@ import com.it10x.foodappgstav7_05.data.pos.AppDatabaseProvider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import com.it10x.foodappgstav7_05.data.mapper.OnlineOrderMapper
+import com.it10x.foodappgstav7_05.data.online.models.CategorySaleData
 //import com.it10x.foodappgstav7_05.data.online.models.createdAtMillis
 import java.util.Calendar
 
@@ -44,6 +45,12 @@ class OnlineOrdersViewModel(
     val pageIndex = MutableStateFlow(0)
     private val _orders = MutableStateFlow<List<OrderMasterData>>(emptyList())
     val orders: StateFlow<List<OrderMasterData>> = _orders
+
+    // -----------------------------
+// CATEGORY SALES STATE
+// -----------------------------
+    private val _categorySales = MutableStateFlow<List<CategorySaleData>>(emptyList())
+    val categorySales: StateFlow<List<CategorySaleData>> = _categorySales
 
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> = _loading
@@ -88,21 +95,6 @@ class OnlineOrdersViewModel(
     }
 
 
-
-
-//fun loadFirstPage() {
-//    viewModelScope.launch {
-//        _loading.value = true
-//
-//        pageIndex.value = 0
-//
-//        _orders.value = repo.getNextPage(limit.toLong())
-//            .sortedByDescending { it.createdAtMillis }
-//
-//        _loading.value = false
-//    }
-//}
-
     fun loadFirstPage() {
         viewModelScope.launch {
 
@@ -119,20 +111,6 @@ class OnlineOrdersViewModel(
         }
     }
 
-//fun loadNextPage() {
-//    viewModelScope.launch {
-//        _loading.value = true
-//
-//        pageIndex.value++
-//
-//        _orders.value = repo.getNextPage(limit.toLong())
-//            .sortedByDescending { it.createdAtMillis }
-//
-//        _loading.value = false
-//    }
-//}
-
-
     fun loadNextPage() {
         viewModelScope.launch {
 
@@ -148,21 +126,6 @@ class OnlineOrdersViewModel(
             _loading.value = false
         }
     }
-
-//fun loadPrevPage() {
-//    viewModelScope.launch {
-//        _loading.value = true
-//
-//        if (pageIndex.value > 0)
-//            pageIndex.value--
-//
-//        _orders.value = repo.getNextPage(limit.toLong())
-//            .sortedByDescending { it.createdAtMillis }
-//
-//        _loading.value = false
-//    }
-//}
-
 
     fun loadPrevPage() {
         viewModelScope.launch {
@@ -181,18 +144,6 @@ class OnlineOrdersViewModel(
             _loading.value = false
         }
     }
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     // -----------------------------
@@ -343,5 +294,26 @@ class OnlineOrdersViewModel(
             _loading.value = false
         }
     }
+
+    // -----------------------------
+// CATEGORY SALES REPORT
+// -----------------------------
+    fun loadCategorySales(startMillis: Long, endMillis: Long) {
+
+        viewModelScope.launch {
+
+            _loading.value = true
+
+            val result = repo.getCategorySalesByDate(
+                startMillis = startMillis,
+                endMillis = endMillis
+            )
+
+            _categorySales.value = result
+
+            _loading.value = false
+        }
+    }
+
 
 }
