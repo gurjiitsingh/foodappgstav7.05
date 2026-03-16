@@ -3,7 +3,7 @@ package com.it10x.foodappgstav7_05.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.it10x.foodappgstav7_05.data.online.models.OrderProductData
-import com.it10x.foodappgstav7_05.data.online.models.repository.OrdersRepository
+import com.it10x.foodappgstav7_05.data.online.repository.OrdersRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch

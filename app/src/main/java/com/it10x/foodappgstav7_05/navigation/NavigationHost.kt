@@ -69,6 +69,7 @@ import com.it10x.foodappgstav7_05.ui.orders.history.OrderItemsScreen
 
 import com.it10x.foodappgstav7_05.ui.pos.PosSessionViewModel
 import com.it10x.foodappgstav7_05.ui.pos.customer.CustomerAddressScreen
+import com.it10x.foodappgstav7_05.ui.reports.CategorySalesScreen
 
 import com.it10x.foodappgstav7_05.ui.sales.SalesScreen
 import com.it10x.foodappgstav7_05.ui.sales.SalesViewModel
@@ -415,7 +416,8 @@ fun NavigationHost(
 
             SalesScreen(
                 viewModel = salesViewModel,
-                onBack = { navController.popBackStack() }
+                onBack = { navController.popBackStack() },
+                onHistoryReport = { navController.navigate("category_sales") }
             )
         }
 
@@ -601,7 +603,16 @@ fun NavigationHost(
             )
         }
 
+        composable("category_sales") {
 
+            val reportsViewModel: OnlineReportsViewModel = viewModel()
+
+            CategorySalesScreen(
+                navController = navController,
+                viewModel = reportsViewModel,
+
+            )
+        }
 
     }
 }

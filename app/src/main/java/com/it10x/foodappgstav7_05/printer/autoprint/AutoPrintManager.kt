@@ -5,7 +5,7 @@ import com.it10x.foodappgstav7_05.data.PrinterRole
 import com.it10x.foodappgstav7_05.data.mapper.OnlineOrderMapper
 import com.it10x.foodappgstav7_05.data.online.models.OrderMasterData
 import com.it10x.foodappgstav7_05.data.online.models.OrderProductData
-import com.it10x.foodappgstav7_05.data.online.models.repository.OrdersRepository
+import com.it10x.foodappgstav7_05.data.online.repository.OrdersRepository
 import com.it10x.foodappgstav7_05.data.print.OutletMapper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

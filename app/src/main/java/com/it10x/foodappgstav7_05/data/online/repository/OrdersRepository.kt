@@ -1,4 +1,4 @@
-package com.it10x.foodappgstav7_05.data.online.models.repository
+package com.it10x.foodappgstav7_05.data.online.repository
 
 import android.util.Log
 import com.it10x.foodappgstav7_05.data.online.models.OrderMasterData

@@ -331,8 +331,8 @@ class BillViewModel(
 
                         val basePaise = MoneyUtils.toPaise(it.basePrice)
 
-                       // ((basePaise * it.taxRate) / 100.0).toLong() * it.quantity
-                        ((basePaise * it.taxRate) / 100.0).roundToLong()
+                        ((basePaise * it.taxRate) / 100.0).roundToLong() * it.quantity
+
                     } else 0L
                 }
 

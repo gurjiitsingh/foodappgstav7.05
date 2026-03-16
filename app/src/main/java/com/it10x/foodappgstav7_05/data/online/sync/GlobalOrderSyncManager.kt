@@ -32,13 +32,14 @@ class GlobalOrderSyncManager(
 
 
     fun startListening() {
-       // Log.d("KOT", "startListening called")
+       Log.d("KOT", "startListening called")
 
         // ❌ Waiter should not listen
         if (role == PosRole.WAITER) {
-            Log.d("SYNC", "Firestore listener disabled for WAITER device")
+            Log.d("SYNC_DISABLED", "Firestore listener disabled for WAITER device")
             return
         }
+        Log.d("SYNC_DISABLED", "Firestore listener no disabled for MAIN POS device")
         if (listener != null) return
 
         listener = firestore.collection("waiter_orders")

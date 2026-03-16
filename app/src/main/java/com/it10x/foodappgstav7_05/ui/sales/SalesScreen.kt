@@ -23,7 +23,8 @@ import java.util.*
 @Composable
 fun SalesScreen(
     viewModel: SalesViewModel,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onHistoryReport: () -> Unit
 ) {
 
     val context = LocalContext.current
@@ -109,6 +110,18 @@ fun SalesScreen(
             ) {
                 Text("Print Report")
             }
+
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            Button(
+                onClick = {
+                    onHistoryReport()
+                }
+            ) {
+                Text("History Report")
+            }
+
 
 
         }

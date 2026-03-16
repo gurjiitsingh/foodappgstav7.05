@@ -7,7 +7,7 @@ import androidx.core.app.NotificationCompat
 import com.google.firebase.FirebaseApp
 import com.it10x.foodappgstav7_05.R
 import com.it10x.foodappgstav7_05.printer.AutoPrintManager
-import com.it10x.foodappgstav7_05.data.online.models.repository.OrdersRepository
+import com.it10x.foodappgstav7_05.data.online.repository.OrdersRepository
 import com.it10x.foodappgstav7_05.printer.PrinterManager
 
 class OrderListenerService : Service() {
