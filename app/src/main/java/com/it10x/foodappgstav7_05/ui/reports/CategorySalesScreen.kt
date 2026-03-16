@@ -32,9 +32,23 @@ fun CategorySalesScreen(
 ) {
     val context = LocalContext.current
     val printer = remember { PrinterManager(context) }
-    var selectedCategory by remember { mutableStateOf("APPETIZERS") }
-    var startDate by remember { mutableStateOf(System.currentTimeMillis()) }
-    var endDate by remember { mutableStateOf(System.currentTimeMillis()) }
+
+    val startCalendar = Calendar.getInstance().apply {
+        set(Calendar.HOUR_OF_DAY, 0)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+    }
+
+    val endCalendar = Calendar.getInstance().apply {
+        set(Calendar.HOUR_OF_DAY, 23)
+        set(Calendar.MINUTE, 59)
+        set(Calendar.SECOND, 59)
+        set(Calendar.MILLISECOND, 999)
+    }
+
+    var startDate by remember { mutableStateOf(startCalendar.timeInMillis) }
+    var endDate by remember { mutableStateOf(endCalendar.timeInMillis) }
 
     val dateFormatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
 
@@ -51,7 +65,12 @@ fun CategorySalesScreen(
     val qty by viewModel.qty.collectAsState()
     val totalSales by viewModel.totalSales.collectAsState()
     val loading by viewModel.loading.collectAsState()
-
+    LaunchedEffect(categories) {
+        if (categories.isNotEmpty() && selectedCategoryId == null) {
+            selectedCategoryId = categories.first().id
+            selectedCategoryName = categories.first().name
+        }
+    }
 
     Scaffold  { padding ->
 
@@ -88,7 +107,7 @@ fun CategorySalesScreen(
                     ) {
                         Text(
                             selectedCategoryName,
-                            style = MaterialTheme.typography.bodySmall
+                            fontWeight = FontWeight.Bold
                         )
                     }
 
@@ -160,6 +179,8 @@ fun CategorySalesScreen(
                     modifier = Modifier.wrapContentWidth(),
                     contentPadding = PaddingValues(horizontal = 15.dp, vertical = 2.dp),
                     onClick = {
+
+                        if (selectedCategoryId == null) return@Button
 
                         viewModel.loadCategoryReport(
                             category = selectedCategoryName,
