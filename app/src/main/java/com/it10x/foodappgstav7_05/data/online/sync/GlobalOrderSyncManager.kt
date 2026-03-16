@@ -32,11 +32,12 @@ class GlobalOrderSyncManager(
 
 
     fun startListening() {
-       Log.d("KOT", "startListening called")
+        Log.d("KOT_DEBUG", "startListening called: role: ${role}")
 
         // ❌ Waiter should not listen
         if (role == PosRole.WAITER) {
             Log.d("SYNC_DISABLED", "Firestore listener disabled for WAITER device")
+            stopListening()
             return
         }
         Log.d("SYNC_DISABLED", "Firestore listener no disabled for MAIN POS device")
@@ -47,12 +48,6 @@ class GlobalOrderSyncManager(
 
                 if (error != null) return@addSnapshotListener
                 if (snapshot == null) return@addSnapshotListener
-
-                // 🚫 Ignore cache snapshot completely
-//                if (snapshot.metadata.isFromCache) {
-//                    Log.d("SYNC_DEBUG", "Ignoring cache snapshot")
-//                    return@addSnapshotListener
-//                }
 
                 snapshot.documentChanges.forEach { change ->
 
@@ -121,7 +116,12 @@ class GlobalOrderSyncManager(
                                 return@launch
                             }
 
-                            Log.d("KOT", "In Firestore core Called")
+                            if (role == PosRole.WAITER) {
+                                Log.d("KOT_DEBUG", "WAITER device blocked from processing Firestore order")
+                                return@launch
+                            }
+
+                            Log.d("KOT_DEBUG", "In Firestore core Called")
 
                             // 🚀 Direct call (NO extra launch inside ViewModel)
                             kitchenViewModel.createKotAndPrintFirestore(
@@ -147,12 +147,9 @@ class GlobalOrderSyncManager(
 
 
 
-
-
-
-
     fun stopListening() {
         listener?.remove()
         listener = null
+        Log.d("SYNC", "Firestore listener stopped")
     }
 }

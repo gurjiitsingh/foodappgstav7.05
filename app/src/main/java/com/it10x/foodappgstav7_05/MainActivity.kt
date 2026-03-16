@@ -223,30 +223,6 @@ class MainActivity : ComponentActivity() {
 
                 // ✅ Initialize Firebase dynamically now
 
-
-
-
-
-
-//                if (FirebaseApp.getApps(context).none { it.name == FirebaseApp.DEFAULT_APP_NAME }) {
-//                    val options = FirebaseOptions.Builder()
-//                        .setApiKey(config.apiKey)
-//                        .setApplicationId(config.applicationId)
-//                        .setProjectId(config.projectId)
-//                        .build()
-//                    FirebaseApp.initializeApp(context, options)
-//                }
-
-
-
-//                globalOrderSyncManager = GlobalOrderSyncManager(
-//                    firestore = firestore,
-//
-//                    processedDao,
-//                    kitchenViewModel = kitchenVM,
-//
-//                )
-
                 val globalOrderSyncManager = remember {
                     GlobalOrderSyncManager(
                     firestore = firestore,

@@ -114,10 +114,10 @@ class KitchenViewModel(
         appVersion: String?,
         role: String,
     ) {
-//         Log.d(
-//             "ORDER_TYPE_TRACE",
-//             "cartToKotMainPOS called with orderType=$orderType, tableNo=$tableNo, sessionId=$sessionId"
-//         )
+         Log.d(
+             "KOT_DEBUG",
+             "cartToKotMainPOS called with orderType=$orderType, tableNo=$tableNo, sessionId=$sessionId"
+         )
          //  logAllKotItems()
         viewModelScope.launch {
             _loading.value = true
@@ -192,7 +192,7 @@ class KitchenViewModel(
         appVersion: String?,
         role: String,
     ) {
-      //  Log.d("KOT_TRACE", "Called from: ${Throwable().stackTrace[1]}")
+        Log.d("KOT_DEBUG", "Called from: ${Throwable().stackTrace[1]}")
 
         if (cartItems.isEmpty()) {
             Log.w("KOT_BRIDGE", "⚠️ createKotAndPrint called with empty cartItems")
