@@ -223,22 +223,36 @@ class MainActivity : ComponentActivity() {
 
                 // ✅ Initialize Firebase dynamically now
 
-                val globalOrderSyncManager = remember {
+                val globalSyncManager = remember {
                     GlobalOrderSyncManager(
-                    firestore = firestore,
-                    processedDao,
-                    kitchenViewModel = kitchenVM,
+                        firestore = firestore,
+                        processedDao = processedDao,
+                        kitchenViewModel = kitchenVM,
                         role = role ?: PosRole.MAIN
                     )
                 }
-
+                globalOrderSyncManager = globalSyncManager
 
                 if (role == PosRole.MAIN) {
-                    LaunchedEffect(Unit) {
-                        globalOrderSyncManager.startListening()
+                    LaunchedEffect(globalSyncManager) {
+                        globalSyncManager.startListening()
                     }
                 }
 
+//                val globalOrderSyncManager = remember {
+//                    GlobalOrderSyncManager(
+//                    firestore = firestore,
+//                    processedDao,
+//                    kitchenViewModel = kitchenVM,
+//                        role = role ?: PosRole.MAIN
+//                    )
+//                }
+//
+//                if (role == PosRole.MAIN) {
+//                    LaunchedEffect(Unit) {
+//                        globalOrderSyncManager.startListening()
+//                    }
+//                }
 
 //                val startDestination = when (role) {
 //                    null -> "device_role_selection"
@@ -844,6 +858,13 @@ class MainActivity : ComponentActivity() {
 
             }
         }}
+    }
+
+
+    override fun onDestroy() {
+        super.onDestroy()
+        globalOrderSyncManager?.stopListening()
+       // Log.d("SYNC", "GlobalOrderSyncManager stopped in onDestroy")
     }
 
     @Composable
